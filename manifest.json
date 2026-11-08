@@ -1,0 +1,26 @@
+{
+  "name": "도로관리팀 다중 차량 운행일지",
+  "short_name": "차량운행일지",
+  "description": "여러 대의 점검·순찰·보수 차량을 개별 등록하여 시작/종료 키로수와 운행시간을 기록하는 차량운행일지 앱",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "lang": "ko-KR",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>다중 차량 운행일지 - 도로관리팀</title>
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="차량운행일지" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans KR', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f1f5f9;
+      color: #0f172a;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .pulse-ring {
+      animation: pulseRing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulseRing {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.04); opacity: 1; }
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start sm:py-6">
+
+  <!-- Main App Container -->
+  <div class="w-full max-w-md bg-white sm:rounded-3xl sm:shadow-2xl overflow-hidden min-h-screen sm:min-h-[820px] flex flex-col border border-slate-200 relative">
+
+    <!-- Top Dark Hero Header (Inspired by user's screenshot) -->
+    <div class="relative bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white pt-4 pb-6 px-4 select-none">
+      <!-- Subtle road pattern overlay -->
+      <div class="absolute inset-0 opacity-15 pointer-events-none" style="background-image: radial-gradient(#94a3b8 1px, transparent 1px); background-size: 16px 16px;"></div>
+
+      <!-- Top Bar: Vehicle Selector & Fleet Management Buttons -->
+      <div class="relative z-10 flex items-center justify-between gap-2 mb-3">
+        <button id="btnOpenFleetModal" type="button" class="flex items-center gap-2 bg-white/10 hover:bg-white/20 active:bg-white/25 transition px-3 py-2 rounded-xl border border-white/15 text-left min-w-0 flex-1">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0" id="headerVehicleStatusDot"></span>
+          <div class="truncate">
+            <div class="text-[11px] text-slate-300 leading-tight flex items-center gap-1">
+              <span id="headerVehicleTypeBadge">순찰/점검차량</span>
+              <span class="text-slate-400">•</span>
+              <span>터치하여 차량 전환</span>
+            </div>
+            <div class="font-bold text-base sm:text-lg tracking-tight truncate flex items-center gap-1.5">
+              <span id="headerVehicleName">싼타페 8169</span>
+              <svg class="w-4 h-4 text-slate-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </button>
+
+        <button id="btnOpenAddVehicle" type="button" class="shrink-0 flex items-center gap-1 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs font-semibold px-3 py-2.5 rounded-xl shadow transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>차량등록</span>
+        </button>
+
+        <button id="btnOpenInstallGuide" type="button" title="깃허브 배포 및 앱 설치 안내" class="shrink-0 flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-semibold px-2.5 py-2.5 rounded-xl shadow transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          <span>앱설치/GitHub</span>
+        </button>
+
+        <button id="btnOpenSettings" type="button" title="기본 운전자 설정" class="shrink-0 p-2.5 bg-white/10 hover:bg-white/20 rounded-xl border border-white/10 text-slate-200 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Horizontal Quick Vehicle Chips -->
+      <div id="vehicleChipStrip" class="relative z-10 flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2 mb-3">
+        <!-- Populated dynamically -->
+      </div>
+
+      <!-- Center Big Start / End Circle Button -->
+      <div class="relative z-10 flex flex-col items-center my-2">
+        <button id="btnMainAction" type="button" class="w-40 h-40 rounded-full flex flex-col items-center justify-center transition-all duration-200 shadow-2xl border-4 border-white/25 bg-white/15 hover:bg-white/20 active:scale-95">
+          <span id="mainActionSubLabel" class="text-sm font-medium text-slate-200 mb-0.5">운행기록</span>
+          <span id="mainActionTitle" class="text-4xl font-extrabold tracking-tight text-white">시작</span>
+          <span id="mainActionTimeHint" class="text-[11px] text-slate-300 mt-1.5 px-2.5 py-0.5 rounded-full bg-black/30">터치하여 출발 기록</span>
+        </button>
+
+        <!-- Active Trip Banner (Shown when selected vehicle is currently driving) -->
+        <div id="activeTripBanner" class="hidden mt-3 w-full bg-amber-500/20 border border-amber-400/40 rounded-2xl px-3.5 py-2.5 text-xs text-amber-100">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+              현재 운행 중 (<span id="activeTripPurpose">일반업무</span>)
+            </span>
+            <span id="activeTripStartTimeBadge" class="font-mono font-bold text-amber-300">출발 18:20</span>
+          </div>
+          <div class="mt-1 flex items-center justify-between text-[11px] text-amber-200/90">
+            <span>출발 키로수: <strong id="activeTripStartOdo" class="font-mono">54,153</strong> km</span>
+            <span id="activeTripStartLoc" class="truncate max-w-[170px]">경기도 용인시 처인구 포곡읍</span>
+          </div>
+        </div>
+
+        <!-- Cumulative Odometer Display -->
+        <div class="mt-4 flex flex-col items-center">
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-300 font-medium">현재 누적주행거리</span>
+            <button id="btnEditOdometer" type="button" class="text-[11px] font-semibold bg-sky-500 hover:bg-sky-400 text-white px-2.5 py-0.5 rounded-full transition shadow-sm">
+              Edit
+            </button>
+          </div>
+          <div class="mt-1 flex items-baseline gap-1.5">
+            <span id="displayCurrentOdo" class="text-3xl sm:text-4xl font-extrabold tracking-tight font-mono text-white">54,153</span>
+            <span class="text-lg font-semibold text-slate-400">KM</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter & Summary Bar -->
+    <div class="bg-slate-100 border-b border-slate-200 px-4 py-2.5 flex items-center justify-between text-xs sm:text-sm">
+      <div class="flex items-center gap-1.5">
+        <select id="monthFilterSelect" aria-label="조회 월 선택" class="bg-white border border-slate-300 text-rose-600 font-bold rounded-lg px-2.5 py-1.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <!-- Populated dynamically -->
+        </select>
+        <button id="btnToggleAllVehiclesView" type="button" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium text-xs hover:bg-slate-50 transition">
+          현재 차량만
+        </button>
+      </div>
+
+      <div class="text-right">
+        <span class="text-slate-500 text-xs">총 운행거리</span>
+        <strong id="summaryTotalDistance" class="ml-1 text-slate-900 font-extrabold font-mono text-sm">130 KM</strong>
+      </div>
+    </div>
+
+    <!-- Sub-toolbar: Manual Entry & CSV Export -->
+    <div class="bg-white border-b border-slate-100 px-4 py-2 flex items-center justify-between gap-2">
+      <div class="text-xs text-slate-500">
+        운행건수 <strong id="summaryTripCount" class="text-slate-800">4</strong>건
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button id="btnOpenManualLogModal" type="button" class="flex items-center gap-1 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-lg transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>직접 추가</span>
+        </button>
+        <button id="btnExportCsv" type="button" class="flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1.5 rounded-lg transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          <span>엑셀(CSV) 저장</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Driving Log List -->
+    <div id="logListContainer" class="flex-1 overflow-y-auto divide-y divide-slate-200 bg-white">
+      <!-- Populated dynamically -->
+    </div>
+
+    <!-- Bottom Fleet Status Footer -->
+    <div class="bg-slate-900 text-slate-300 px-4 py-3 text-xs flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="px-2 py-0.5 bg-blue-600/30 text-blue-300 border border-blue-500/30 rounded font-semibold">도로관리팀</span>
+        <span id="footerFleetSummary">등록 차량 3대 • 운행중 0대</span>
+      </div>
+      <button id="btnOpenFleetModalFooter" type="button" class="text-sky-400 hover:underline font-medium">
+        차량 목록 관리 →
+      </button>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toastBox" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white text-xs font-medium px-4 py-2.5 rounded-full shadow-lg border border-white/15">
+      저장되었습니다.
+    </div>
+
+    <!-- MODAL 1: Start Driving Modal -->
+    <div id="modalStartTrip" class="hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
+        <div class="bg-blue-600 text-white px-5 py-4 flex items-center justify-between">
+          <div>
+            <div id="startModalVehicleBadge" class="text-xs text-blue-100 font-medium">싼타페 8169</div>
+            <h3 class="text-lg font-bold">운행 시작 기록</h3>
+          </div>
+          <button type="button" data-close-modal="modalStartTrip" class="p-1.5 rounded-lg hover:bg-white/15">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form id="formStartTrip" class="p-5 space-y-4 text-sm">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 mb-1">운행일자</label>
+              <input type="date" id="startTripDate" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 mb-1">출발시간</label>
+              <input type="time" id="startTripTime" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">출발시 누적거리 (시작 키로수, KM)</label>
+            <div class="relative">
+              <input type="number" id="startTripOdo" min="0" step="1" required class="w-full border-2 border-blue-500/70 rounded-xl px-3.5 py-2.5 text-lg font-extrabold font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">KM</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">이전 도착 키로수가 자동 입력됩니다. 계기판과 다르면 수정하세요.</p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 mb-1">사용목적</label>
+              <select id="startTripPurpose" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="도로순찰">도로순찰</option>
+                <option value="시설물점검">시설물점검</option>
+                <option value="긴급출동/보수">긴급출동/보수</option>
+                <option value="일반업무">일반업무</option>
+                <option value="출퇴근/기타">출퇴근/기타</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 mb-1">운전자 (부서/이름)</label>
+              <div class="flex gap-1.5">
+                <input type="text" id="startTripDept" placeholder="부서" class="w-1/2 border border-slate-300 rounded-xl px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input type="text" id="startTripDriver" placeholder="이름" class="w-1/2 border border-slate-300 rounded-xl px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">출발지</label>
+            <input type="text" id="startTripOrigin" placeholder="예: 경기도 용인시 처인구 포곡읍" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+
+          <div class="pt-2 flex gap-2">
+            <button type="button" data-close-modal="modalStartTrip" class="w-1/3 py-3 rounded-xl border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50">취소</button>
+            <button type="submit" class="w-2/3 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg">운행 시작하기</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL 2: End Driving Modal -->
+    <div id="modalEndTrip" class="hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden">
+        <div class="bg-rose-600 text-white px-5 py-4 flex items-center justify-between">
+          <div>
+            <div id="endModalVehicleBadge" class="text-xs text-rose-100 font-medium">싼타페 8169 • 운행 종료</div>
+            <h3 class="text-lg font-bold">도착 및 종료키로수 기록</h3>
+          </div>
+          <button type="button" data-close-modal="modalEndTrip" class="p-1.5 rounded-lg hover:bg-white/15">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form id="formEndTrip" class="p-5 space-y-4 text-sm">
+          <!-- Summary of Start Info -->
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between text-xs">
+            <div>
+              <span class="text-slate-400 block">출발시 누적거리 (시작 키로수)</span>
+              <strong id="endModalStartOdoDisplay" class="text-base font-extrabold font-mono text-slate-800">54,103 KM</strong>
+            </div>
+            <div class="text-right">
+              <span class="text-slate-400 block">출발 시간</span>
+              <strong id="endModalStartTimeDisplay" class="text-sm font-bold text-slate-700">18:20</strong>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 mb-1">종료시간 (현재시간 자동)</label>
+              <input type="time" id="endTripTime" required class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-rose-500" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 mb-1">계산된 주행거리</label>
+              <div id="endModalCalculatedDist" class="w-full bg-rose-50 border border-rose-200 text-rose-600 rounded-xl px-3 py-2.5 text-sm font-extrabold font-mono text-right">
+                + 0 KM
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs font-semibold text-slate-700">도착시 누적거리 (종료 키로수, KM)</label>
+              <div class="flex gap-1">
+                <button type="button" data-add-km="5" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-2 py-0.5 rounded">+5km</button>
+                <button type="button" data-add-km="10" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-2 py-0.5 rounded">+10km</button>
+                <button type="button" data-add-km="30" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-2 py-0.5 rounded">+30km</button>
+                <button type="button" data-add-km="50" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-2 py-0.5 rounded">+50km</button>
+              </div>
+            </div>
+            <div class="relative">
+              <input type="number" id="endTripOdo" min="0" step="1" required class="w-full border-2 border-rose-500 rounded-xl px-3.5 py-2.5 text-xl font-extrabold font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500" />
+              <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">KM</span>
+            </div>
+            <p id="endOdoErrorMsg" class="hidden text-xs text-rose-600 font-semibold mt-1">종료 키로수는 시작 키로수보다 작을 수 없습니다.</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">도착지</label>
+            <input type="text" id="endTripDestination" placeholder="예: 경기도 용인시 처인구 포곡읍" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">비고 / 점검 메모 (선택)</label>
+            <input type="text" id="endTripNotes" placeholder="예: 영동선 순찰 완료, 특이사항 없음" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
+          </div>
+
+          <div class="pt-2 flex gap-2">
+            <button type="button" data-close-modal="modalEndTrip" class="w-1/3 py-3 rounded-xl border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50">취소</button>
+            <button type="submit" class="w-2/3 py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm shadow-lg">운행 종료 및 저장</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL 3: Edit / Detail Log Modal (Matches Screenshot 3 "운행정보 수정") -->
+    <div id="modalEditLog" class="hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md max-h-[92vh] rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <!-- Blue Top Header like Screenshot 3 -->
+        <div class="bg-gradient-to-r from-sky-500 to-blue-600 text-white px-4 py-3.5 flex items-center justify-between shrink-0">
+          <div class="flex items-center gap-2">
+            <button type="button" data-close-modal="modalEditLog" class="p-1 rounded-lg hover:bg-white/15">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+            </button>
+            <h3 id="editLogModalTitle" class="text-base font-bold">운행정보 수정</h3>
+          </div>
+          <div class="flex items-center gap-3 text-sm font-semibold">
+            <button type="button" id="btnDeleteLogItem" class="text-white/90 hover:text-white px-2 py-1 rounded hover:bg-white/10">삭제</button>
+            <button type="button" id="btnSaveLogItem" class="bg-white text-blue-600 px-3 py-1 rounded-lg shadow-xs hover:bg-blue-50 font-bold">저장</button>
+          </div>
+        </div>
+
+        <form id="formEditLog" class="flex-1 overflow-y-auto divide-y divide-slate-100 text-sm">
+          <input type="hidden" id="editLogId" />
+
+          <!-- Section 1: 운행정보 -->
+          <div class="p-4 space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-sky-600">운행정보</span>
+              <select id="editLogVehicleId" aria-label="차량 선택" class="text-xs font-bold bg-slate-100 border border-slate-300 rounded-lg px-2.5 py-1 text-slate-700">
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">사용목적</label>
+              <select id="editLogPurpose" class="w-full border-b border-slate-200 pb-2 font-semibold text-slate-800 focus:outline-none focus:border-blue-500">
+                <option value="도로순찰">도로순찰</option>
+                <option value="시설물점검">시설물점검</option>
+                <option value="긴급출동/보수">긴급출동/보수</option>
+                <option value="일반업무">일반업무</option>
+                <option value="출퇴근/기타">출퇴근/기타</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">출발시 누적거리</label>
+                <div class="flex items-baseline border-b border-slate-200 pb-1.5">
+                  <input type="number" id="editLogStartOdo" min="0" required class="w-full font-mono font-bold text-base text-slate-900 focus:outline-none" />
+                  <span class="text-xs text-slate-400 font-semibold ml-1">KM</span>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">도착시 누적거리</label>
+                <div class="flex items-baseline border-b border-slate-200 pb-1.5">
+                  <input type="number" id="editLogEndOdo" min="0" required class="w-full font-mono font-bold text-base text-slate-900 focus:outline-none" />
+                  <span class="text-xs text-slate-400 font-semibold ml-1">KM</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">주행거리</label>
+                <div class="flex items-baseline border-b border-slate-200 pb-1.5">
+                  <input type="text" id="editLogDistanceDisplay" readonly class="w-full font-mono font-extrabold text-base text-rose-600 bg-transparent focus:outline-none" />
+                  <span class="text-xs text-slate-400 font-semibold ml-1">KM</span>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">상태</label>
+                <div class="border-b border-slate-200 pb-1.5 text-xs font-semibold text-emerald-600 flex items-center h-[28px]">
+                  운행완료 기록
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">출발지</label>
+              <input type="text" id="editLogOrigin" class="w-full border-b border-slate-200 pb-1.5 font-medium text-slate-800 focus:outline-none focus:border-blue-500" />
+            </div>
+
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">도착지</label>
+              <input type="text" id="editLogDestination" class="w-full border-b border-slate-200 pb-1.5 font-medium text-slate-800 focus:outline-none focus:border-blue-500" />
+            </div>
+          </div>
+
+          <!-- Section 2: 기타정보 -->
+          <div class="p-4 space-y-4 bg-slate-50/50">
+            <div class="text-xs font-bold text-sky-600">기타정보</div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">부서</label>
+                <input type="text" id="editLogDept" class="w-full border-b border-slate-200 bg-transparent pb-1.5 font-medium text-slate-800 focus:outline-none focus:border-blue-500" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">이름</label>
+                <input type="text" id="editLogDriver" class="w-full border-b border-slate-200 bg-transparent pb-1.5 font-medium text-slate-800 focus:outline-none focus:border-blue-500" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">운행일자</label>
+                <input type="date" id="editLogDate" required class="w-full border-b border-slate-200 bg-transparent pb-1.5 font-medium text-slate-800 focus:outline-none focus:border-blue-500" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">운행시간 (시작 ~ 종료)</label>
+                <div class="flex items-center gap-1 border-b border-slate-200 pb-1.5">
+                  <input type="time" id="editLogStartTime" required class="w-full bg-transparent font-mono text-xs font-semibold text-slate-800 focus:outline-none" />
+                  <span class="text-slate-400">~</span>
+                  <input type="time" id="editLogEndTime" required class="w-full bg-transparent font-mono text-xs font-semibold text-slate-800 focus:outline-none" />
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">유류비 (원)</label>
+                <input type="number" id="editLogFuelCost" min="0" placeholder="0" class="w-full border-b border-slate-200 bg-transparent pb-1.5 font-mono text-xs text-slate-800 focus:outline-none" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">통행료 (원)</label>
+                <input type="number" id="editLogTollCost" min="0" placeholder="0" class="w-full border-b border-slate-200 bg-transparent pb-1.5 font-mono text-xs text-slate-800 focus:outline-none" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">기타비용 (원)</label>
+                <input type="number" id="editLogEtcCost" min="0" placeholder="0" class="w-full border-b border-slate-200 bg-transparent pb-1.5 font-mono text-xs text-slate-800 focus:outline-none" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">메모</label>
+              <textarea id="editLogNotes" rows="2" placeholder="메모를 입력하세요 (최대 500자)" class="w-full border border-slate-200 rounded-xl p-2.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL 4: Multi-Vehicle Fleet Management Modal -->
+    <div id="modalFleetManager" class="hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md max-h-[90vh] rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <div class="bg-slate-900 text-white px-5 py-4 flex items-center justify-between shrink-0">
+          <div>
+            <span class="text-[11px] text-sky-400 font-semibold block">도로공사 점검/운행차량 통합관리</span>
+            <h3 class="text-base font-bold">등록 차량 선택 및 관리</h3>
+          </div>
+          <button type="button" data-close-modal="modalFleetManager" class="p-1.5 rounded-lg hover:bg-white/15">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="p-4 flex-1 overflow-y-auto space-y-3">
+          <div id="fleetModalList" class="space-y-2.5">
+            <!-- Populated dynamically -->
+          </div>
+
+          <!-- Add New Vehicle Form inside Modal -->
+          <div id="addVehicleSection" class="bg-slate-50 border border-slate-200 rounded-2xl p-4 mt-4">
+            <h4 class="text-xs font-bold text-slate-700 mb-3 flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>새 차량 개별 등록</span>
+            </h4>
+            <form id="formAddVehicle" class="space-y-3 text-xs">
+              <div class="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label class="block text-slate-500 font-semibold mb-1">차량명 / 번호판</label>
+                  <input type="text" id="newVehicleName" required placeholder="예: 코란도 3412" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+                </div>
+                <div>
+                  <label class="block text-slate-500 font-semibold mb-1">차량 구분</label>
+                  <select id="newVehicleType" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="순찰/점검차량">순찰/점검차량</option>
+                    <option value="안전순찰차">안전순찰차</option>
+                    <option value="작업/보수차량">작업/보수차량</option>
+                    <option value="업무용승용">업무용승용</option>
+                    <option value="제설/특수차량">제설/특수차량</option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label class="block text-slate-500 font-semibold mb-1">현재 누적키로수 (KM)</label>
+                  <input type="number" id="newVehicleOdo" min="0" required placeholder="예: 32500" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono font-bold bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label class="block text-slate-500 font-semibold mb-1">기본 출발지</label>
+                  <input type="text" id="newVehicleOrigin" placeholder="예: 용인포곡지사" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+              <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow transition">
+                + 차량 등록하기
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 5: Edit Odometer & Default Driver Settings Modal -->
+    <div id="modalOdoSettings" class="hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
+        <div class="bg-slate-800 text-white px-4 py-3.5 flex items-center justify-between">
+          <h3 class="text-sm font-bold">차량 누적거리 및 기본 정보 설정</h3>
+          <button type="button" data-close-modal="modalOdoSettings" class="p-1 rounded hover:bg-white/10">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <form id="formOdoSettings" class="p-4 space-y-3.5 text-xs">
+          <div>
+            <label class="block text-slate-500 font-semibold mb-1">선택된 차량 명칭</label>
+            <input type="text" id="settingVehicleName" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm font-bold" />
+          </div>
+          <div>
+            <label class="block text-slate-500 font-semibold mb-1">현재 누적주행거리 (KM)</label>
+            <input type="number" id="settingVehicleOdo" min="0" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-base font-mono font-extrabold text-blue-600" />
+          </div>
+          <div class="grid grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-slate-500 font-semibold mb-1">기본 소속 부서</label>
+              <input type="text" id="settingDefaultDept" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs" />
+            </div>
+            <div>
+              <label class="block text-slate-500 font-semibold mb-1">기본 운전자 이름</label>
+              <input type="text" id="settingDefaultDriver" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-slate-500 font-semibold mb-1">기본 출발/도착 위치</label>
+            <input type="text" id="settingDefaultLocation" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs" />
+          </div>
+          <div class="pt-2 flex gap-2">
+            <button type="button" data-close-modal="modalOdoSettings" class="w-1/3 py-2.5 rounded-xl border border-slate-300 font-semibold text-slate-600">취소</button>
+            <button type="submit" class="w-2/3 py-2.5 rounded-xl bg-blue-600 text-white font-bold">설정 저장</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL 6: GitHub Pages & Mobile App (PWA / APK) Install Guide + Backup -->
+    <div id="modalInstallGuide" class="hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md max-h-[90vh] rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <div class="bg-slate-900 text-white px-5 py-4 flex items-center justify-between shrink-0">
+          <div>
+            <span class="text-[11px] text-emerald-400 font-semibold block">GitHub Pages & 모바일 앱(PWA/APK) 제작</span>
+            <h3 class="text-base font-bold">깃허브 등록 및 스마트폰 앱 설치 가이드</h3>
+          </div>
+          <button type="button" data-close-modal="modalInstallGuide" class="p-1.5 rounded-lg hover:bg-white/15">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="p-4 flex-1 overflow-y-auto space-y-4 text-xs leading-relaxed text-slate-700">
+          <!-- Native PWA Install Button (Shown when supported) -->
+          <div id="pwaInstallBanner" class="hidden bg-emerald-50 border border-emerald-200 rounded-2xl p-3.5 flex items-center justify-between gap-2">
+            <div>
+              <div class="font-bold text-emerald-900 text-sm">홈 화면에 바로 앱 설치 가능</div>
+              <div class="text-emerald-700 text-[11px]">주소창 없이 일반 네이티브 어플처럼 실행됩니다.</div>
+            </div>
+            <button type="button" id="btnTriggerPwaInstall" class="shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-2 rounded-xl shadow">
+              지금 앱 설치
+            </button>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2">
+            <div class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+              <span class="w-5 h-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">1</span>
+              <span>GitHub 저장소(Repository)에 파일 올리기</span>
+            </div>
+            <ol class="list-decimal list-inside space-y-1 text-slate-600 pl-1">
+              <li>첨부된 <strong>driving-log-pwa.zip</strong> 압축을 풉니다.</li>
+              <li>GitHub에서 새 Repository(예: <code class="bg-slate-200 px-1.5 py-0.5 rounded text-slate-800">driving-log</code>, Public)를 생성합니다.</li>
+              <li><strong>Add file → Upload files</strong>를 눌러 압축 푼 파일들(<code class="bg-slate-200 px-1 rounded">index.html</code>, <code class="bg-slate-200 px-1 rounded">manifest.json</code>, <code class="bg-slate-200 px-1 rounded">sw.js</code>, <code class="bg-slate-200 px-1 rounded">icons/</code> 폴더)을 그대로 드래그해 올리고 <strong>Commit changes</strong>를 누릅니다.</li>
+            </ol>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2">
+            <div class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+              <span class="w-5 h-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">2</span>
+              <span>GitHub Pages 활성화 (무료 앱 주소 발급)</span>
+            </div>
+            <ol class="list-decimal list-inside space-y-1 text-slate-600 pl-1">
+              <li>저장소 상단 <strong>Settings → 왼쪽 메뉴 Pages</strong>로 이동합니다.</li>
+              <li><strong>Build and deployment → Branch</strong>에서 <code class="bg-slate-200 px-1.5 py-0.5 rounded text-slate-800">main</code> (또는 master) 선택 후 <strong>Save</strong>를 누릅니다.</li>
+              <li>약 1분 뒤 <code class="bg-slate-200 px-1 rounded">https://아이디.github.io/driving-log/</code> 주소가 생성됩니다.</li>
+            </ol>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2">
+            <div class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+              <span class="w-5 h-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">3</span>
+              <span>스마트폰 바탕화면에 진짜 어플로 설치 / APK 만들기</span>
+            </div>
+            <ul class="list-disc list-inside space-y-1 text-slate-600 pl-1">
+              <li><strong>안드로이드 (Chrome)</strong>: 배포된 주소 접속 → 우측 상단 메뉴(⋮) → <strong>[앱 설치]</strong> 또는 <strong>[홈 화면에 추가]</strong> 터치</li>
+              <li><strong>아이폰 (Safari)</strong>: 배포된 주소 접속 → 하단 공유 버튼(네모 위 화살표) → <strong>[홈 화면에 추가]</strong> 터치</li>
+              <li><strong>안드로이드 .APK 설치파일 추출</strong>: <a href="https://www.pwabuilder.com" target="_blank" rel="noopener noreferrer" class="text-blue-600 font-semibold underline">PWABuilder.com</a>에 GitHub Pages 주소를 입력하면 안드로이드 설치용 <strong>.apk 파일</strong>을 바로 다운로드할 수 있습니다.</li>
+            </ul>
+          </div>
+
+          <!-- Data Backup & Restore Section for Multi-Device Sharing -->
+          <div class="bg-blue-50/70 border border-blue-200 rounded-2xl p-3.5 space-y-2.5">
+            <div class="font-bold text-blue-950 text-sm">데이터 전체 백업 및 복원 (기기 변경/공유용)</div>
+            <p class="text-[11px] text-blue-800">차량 목록과 전체 운행 기록을 파일로 백업하거나 다른 휴대폰으로 그대로 옮길 수 있습니다.</p>
+            <div class="flex gap-2">
+              <button type="button" id="btnBackupJson" class="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-xs transition">
+                백업 파일(.json) 저장
+              </button>
+              <label class="flex-1 py-2 bg-white hover:bg-slate-50 text-blue-700 border border-blue-300 font-bold rounded-xl text-center cursor-pointer transition">
+                <span>백업 파일 불러오기</span>
+                <input type="file" id="inputRestoreJson" accept=".json" class="hidden" />
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = 'road_corp_multi_vehicle_log_v1';
+
+      const defaultState = {
+        selectedVehicleId: 'v1',
+        viewAllVehicles: false,
+        selectedMonth: '2026-11',
+        defaultDept: '도로관리팀',
+        defaultDriver: '박성민',
+        defaultLocation: '경기도 용인시 처인구 포곡읍',
+        vehicles: [
+          {
+            id: 'v1',
+            name: '싼타페 8169',
+            type: '순찰/점검차량',
+            currentOdo: 54153,
+            defaultOrigin: '경기도 용인시 처인구 포곡읍',
+            activeTrip: null
+          },
+          {
+            id: 'v2',
+            name: '포터II 4201 (보수)',
+            type: '작업/보수차량',
+            currentOdo: 88320,
+            defaultOrigin: '경기도 용인시 처인구 포곡읍',
+            activeTrip: null
+          },
+          {
+            id: 'v3',
+            name: '더뉴봉고3 7782 (순찰)',
+            type: '안전순찰차',
+            currentOdo: 41290,
+            defaultOrigin: '경기도 용인시 처인구 포곡읍',
+            activeTrip: null
+          },
+          {
+            id: 'v4',
+            name: '카니발 1954 (점검)',
+            type: '순찰/점검차량',
+            currentOdo: 63410,
+            defaultOrigin: '경기도 용인시 처인구 포곡읍',
+            activeTrip: null
+          }
+        ],
+        logs: [
+          {
+            id: 'log_1',
+            vehicleId: 'v1',
+            date: '2026-11-06',
+            startTime: '18:20',
+            endTime: '19:20',
+            startOdo: 54103,
+            endOdo: 54153,
+            origin: '경기도 용인시 처인구 포곡읍',
+            destination: '경기도 용인시 처인구 포곡읍',
+            purpose: '일반업무',
+            dept: '도로관리팀',
+            driver: '박성민',
+            fuelCost: 0,
+            tollCost: 0,
+            etcCost: 0,
+            notes: '야간 도로 시설물 순찰 완료'
+          },
+          {
+            id: 'log_2',
+            vehicleId: 'v1',
+            date: '2026-11-06',
+            startTime: '10:12',
+            endTime: '10:47',
+            startOdo: 54091,
+            endOdo: 54103,
+            origin: '경기도 용인시 처인구 포곡읍',
+            destination: '경기도 용인시 처인구 포곡읍',
+            purpose: '일반업무',
+            dept: '도로관리팀',
+            driver: '박성민',
+            fuelCost: 0,
+            tollCost: 0,
+            etcCost: 0,
+            notes: '오전 구간 점검'
+          },
+          {
+            id: 'log_3',
+            vehicleId: 'v1',
+            date: '2026-11-05',
+            startTime: '09:30',
+            endTime: '10:23',
+            startOdo: 54053,
+            endOdo: 54091,
+            origin: '경기도 용인시 처인구 포곡읍',
+            destination: '경기도 용인시 처인구 포곡읍',
+            purpose: '일반업무',
+            dept: '도로관리팀',
+            driver: '박성민',
+            fuelCost: 0,
+            tollCost: 0,
+            etcCost: 0,
+            notes: ''
+          },
+          {
+            id: 'log_4',
+            vehicleId: 'v1',
+            date: '2026-11-04',
+            startTime: '09:46',
+            endTime: '11:13',
+            startOdo: 54039,
+            endOdo: 54053,
+            origin: '경기도 용인시 처인구 포곡읍',
+            destination: '경기도 용인시 처인구 포곡읍',
+            purpose: '일반업무',
+            dept: '도로관리팀',
+            driver: '박성민',
+            fuelCost: 0,
+            tollCost: 0,
+            etcCost: 0,
+            notes: ''
+          },
+          {
+            id: 'log_5',
+            vehicleId: 'v1',
+            date: '2026-11-02',
+            startTime: '15:10',
+            endTime: '16:29',
+            startOdo: 54023,
+            endOdo: 54039,
+            origin: '경기도 용인시 처인구 포곡읍',
+            destination: '경기도 용인시 처인구 포곡읍',
+            purpose: '도로순찰',
+            dept: '도로관리팀',
+            driver: '박성민',
+            fuelCost: 0,
+            tollCost: 0,
+            etcCost: 0,
+            notes: ''
+          },
+          {
+            id: 'log_6',
+            vehicleId: 'v2',
+            date: '2026-11-06',
+            startTime: '13:30',
+            endTime: '15:40',
+            startOdo: 88275,
+            endOdo: 88320,
+            origin: '경기도 용인시 처인구 포곡읍',
+            destination: '영동고속도로 마성터널 부근',
+            purpose: '시설물점검',
+            dept: '도로관리팀',
+            driver: '박성민',
+            fuelCost: 0,
+            tollCost: 0,
+            etcCost: 0,
+            notes: '가드레일 및 배수로 상태 점검'
+          },
+          {
+            id: 'log_7',
+            vehicleId: 'v3',
+            date: '2026-11-06',
+            startTime: '08:50',
+            endTime: '11:20',
+            startOdo: 41230,
+            endOdo: 41290,
+            origin: '경기도 용인시 처인구 포곡읍',
+            destination: '용인IC ~ 양지IC 왕복 구간',
+            purpose: '도로순찰',
+            dept: '도로관리팀',
+            driver: '박성민',
+            fuelCost: 0,
+            tollCost: 0,
+            etcCost: 0,
+            notes: '노면 파손 확인'
+          }
+        ]
+      };
+
+      let state = loadState();
+
+      function loadState() {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed && Array.isArray(parsed.vehicles) && parsed.vehicles.length > 0) {
+              return parsed;
+            }
+          }
+        } catch (e) {
+          // Ignore storage error
+        }
+        return JSON.parse(JSON.stringify(defaultState));
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (e) {
+          // Ignore storage error
+        }
+      }
+
+      function formatNumber(num) {
+        const n = Number(num) || 0;
+        return n.toLocaleString('ko-KR');
+      }
+
+      function getNowDateStr() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+
+      function getNowTimeStr() {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        return `${hh}:${mm}`;
+      }
+
+      function getKoreanDayOfWeek(dateStr) {
+        const days = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+        const parts = (dateStr || '').split('-');
+        if (parts.length !== 3) return '';
+        const dt = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        return days[dt.getDay()] || '';
+      }
+
+      function showToast(msg) {
+        const box = document.getElementById('toastBox');
+        if (!box) return;
+        box.textContent = msg;
+        box.classList.remove('hidden');
+        clearTimeout(window.__toastTimer);
+        window.__toastTimer = setTimeout(() => {
+          box.classList.add('hidden');
+        }, 2400);
+      }
+
+      function getSelectedVehicle() {
+        let v = state.vehicles.find(item => item.id === state.selectedVehicleId);
+        if (!v) {
+          v = state.vehicles[0];
+          state.selectedVehicleId = v.id;
+        }
+        return v;
+      }
+
+      function getVehicleById(id) {
+        return state.vehicles.find(item => item.id === id) || null;
+      }
+
+      function openModal(modalId) {
+        const el = document.getElementById(modalId);
+        if (el) el.classList.remove('hidden');
+      }
+
+      function closeModal(modalId) {
+        const el = document.getElementById(modalId);
+        if (el) el.classList.add('hidden');
+      }
+
+      // Render Month Filter Options
+      function renderMonthOptions() {
+        const select = document.getElementById('monthFilterSelect');
+        const monthsSet = new Set(['2026-11', '2026-10']);
+        state.logs.forEach(log => {
+          if (log.date && log.date.length >= 7) {
+            monthsSet.add(log.date.slice(0, 7));
+          }
+        });
+        const nowMonth = getNowDateStr().slice(0, 7);
+        monthsSet.add(nowMonth);
+
+        const sortedMonths = Array.from(monthsSet).sort().reverse();
+        if (!sortedMonths.includes(state.selectedMonth)) {
+          state.selectedMonth = sortedMonths[0];
+        }
+
+        select.innerHTML = sortedMonths.map(ym => {
+          const [y, m] = ym.split('-');
+          const selectedAttr = ym === state.selectedMonth ? 'selected' : '';
+          return `<option value="${ym}" ${selectedAttr}>${y}년 ${Number(m)}월</option>`;
+        }).join('');
+      }
+
+      // Render Header & Vehicle Strip
+      function renderHeaderAndStrip() {
+        const v = getSelectedVehicle();
+        const isDriving = Boolean(v.activeTrip);
+
+        document.getElementById('headerVehicleName').textContent = v.name;
+        document.getElementById('headerVehicleTypeBadge').textContent = v.type || '점검/운행차량';
+        document.getElementById('displayCurrentOdo').textContent = formatNumber(v.currentOdo);
+
+        const statusDot = document.getElementById('headerVehicleStatusDot');
+        if (isDriving) {
+          statusDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping shrink-0';
+        } else {
+          statusDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0';
+        }
+
+        // Render horizontal vehicle chips
+        const strip = document.getElementById('vehicleChipStrip');
+        strip.innerHTML = state.vehicles.map(veh => {
+          const active = veh.id === v.id;
+          const driving = Boolean(veh.activeTrip);
+          const baseClasses = active
+            ? 'bg-sky-500 text-white border-sky-400 shadow-sm font-bold'
+            : 'bg-white/10 text-slate-300 border-white/10 hover:bg-white/20 font-medium';
+          const badge = driving
+            ? '<span class="ml-1 px-1.5 py-0.2 bg-amber-400 text-slate-950 rounded-full text-[10px] font-extrabold">운행중</span>'
+            : '';
+          return `
+            <button type="button" data-select-vehicle="${veh.id}" class="shrink-0 text-xs px-3 py-1.5 rounded-full border transition flex items-center ${baseClasses}">
+              <span>${veh.name}</span>
+              ${badge}
+            </button>
+          `;
+        }).join('');
+
+        // Main Circle Action Button
+        const btnMain = document.getElementById('btnMainAction');
+        const subLabel = document.getElementById('mainActionSubLabel');
+        const title = document.getElementById('mainActionTitle');
+        const hint = document.getElementById('mainActionTimeHint');
+        const banner = document.getElementById('activeTripBanner');
+
+        if (isDriving) {
+          btnMain.className = 'w-40 h-40 rounded-full flex flex-col items-center justify-center transition-all duration-200 shadow-2xl border-4 border-rose-300/60 bg-gradient-to-b from-rose-500 to-rose-700 hover:from-rose-400 hover:to-rose-600 active:scale-95 pulse-ring';
+          subLabel.textContent = '운행중 • 터치시';
+          title.textContent = '종료';
+          hint.textContent = `출발 ${v.activeTrip.startTime} (${formatNumber(v.activeTrip.startOdo)}km)`;
+
+          banner.classList.remove('hidden');
+          document.getElementById('activeTripPurpose').textContent = v.activeTrip.purpose || '일반업무';
+          document.getElementById('activeTripStartTimeBadge').textContent = `출발 ${v.activeTrip.startTime}`;
+          document.getElementById('activeTripStartOdo').textContent = formatNumber(v.activeTrip.startOdo);
+          document.getElementById('activeTripStartLoc').textContent = v.activeTrip.origin || '';
+        } else {
+          btnMain.className = 'w-40 h-40 rounded-full flex flex-col items-center justify-center transition-all duration-200 shadow-2xl border-4 border-white/25 bg-white/15 hover:bg-white/25 active:scale-95';
+          subLabel.textContent = '운행기록';
+          title.textContent = '시작';
+          hint.textContent = '터치하여 출발 키로수 기록';
+          banner.classList.add('hidden');
+        }
+
+        // Toggle All Vehicles View Button
+        const toggleBtn = document.getElementById('btnToggleAllVehiclesView');
+        if (state.viewAllVehicles) {
+          toggleBtn.textContent = '전체 차량 보기중';
+          toggleBtn.className = 'px-2.5 py-1.5 rounded-lg border border-blue-600 bg-blue-600 text-white font-semibold text-xs transition';
+        } else {
+          toggleBtn.textContent = '현재 차량만';
+          toggleBtn.className = 'px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium text-xs hover:bg-slate-50 transition';
+        }
+
+        // Footer status
+        const drivingCount = state.vehicles.filter(item => Boolean(item.activeTrip)).length;
+        document.getElementById('footerFleetSummary').textContent =
+          `등록 차량 ${state.vehicles.length}대 • 현재 운행중 ${drivingCount}대`;
+      }
+
+      // Render Log List (Matches Screenshot 2 layout)
+      function renderLogList() {
+        const container = document.getElementById('logListContainer');
+        const v = getSelectedVehicle();
+
+        const filtered = state.logs
+          .filter(log => {
+            const matchMonth = (log.date || '').startsWith(state.selectedMonth);
+            const matchVehicle = state.viewAllVehicles ? true : log.vehicleId === v.id;
+            return matchMonth && matchVehicle;
+          })
+          .sort((a, b) => {
+            const dtA = `${a.date} ${a.endTime || a.startTime || '00:00'}`;
+            const dtB = `${b.date} ${b.endTime || b.startTime || '00:00'}`;
+            return dtB.localeCompare(dtA);
+          });
+
+        const totalDist = filtered.reduce((acc, item) => {
+          const dist = Math.max(0, (Number(item.endOdo) || 0) - (Number(item.startOdo) || 0));
+          return acc + dist;
+        }, 0);
+
+        document.getElementById('summaryTotalDistance').textContent = `${formatNumber(totalDist)} KM`;
+        document.getElementById('summaryTripCount').textContent = String(filtered.length);
+
+        if (filtered.length === 0) {
+          container.innerHTML = `
+            <div class="py-16 px-6 text-center">
+              <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <p class="text-sm font-semibold text-slate-700">운행 기록이 없습니다.</p>
+              <p class="text-xs text-slate-400 mt-1">상단의 [시작] 버튼을 눌러 운행을 시작하거나 [직접 추가] 버튼을 이용해 보세요.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = filtered.map(log => {
+          const dayNum = (log.date || '').split('-')[2] || '--';
+          const dow = getKoreanDayOfWeek(log.date);
+          const dist = Math.max(0, (Number(log.endOdo) || 0) - (Number(log.startOdo) || 0));
+          const veh = getVehicleById(log.vehicleId);
+          const vehBadge = state.viewAllVehicles && veh
+            ? `<span class="inline-block bg-slate-800 text-white text-[10px] font-bold px-2 py-0.5 rounded mb-1">${veh.name}</span>`
+            : '';
+
+          return `
+            <div data-edit-log="${log.id}" class="p-4 hover:bg-slate-50 active:bg-slate-100 transition cursor-pointer flex items-stretch gap-3">
+              <!-- Left Date Column -->
+              <div class="w-12 shrink-0 pt-0.5 text-center sm:text-left">
+                <div class="text-lg font-extrabold text-slate-800 leading-none">${dayNum}<span class="text-xs font-semibold text-slate-500 ml-0.5">일</span></div>
+                <div class="text-[11px] text-slate-400 mt-1">${dow}</div>
+              </div>
+
+              <!-- Middle Timeline (Destination on top, Origin below like Screenshot 2) -->
+              <div class="flex-1 min-w-0">
+                ${vehBadge}
+                <!-- Arrival Row -->
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full border-2 border-orange-500 bg-white shrink-0"></span>
+                  <span class="text-xs font-bold text-orange-600">도착지</span>
+                  <span class="text-xs font-mono font-semibold text-slate-600">${log.endTime || '--:--'}</span>
+                </div>
+                <div class="ml-1 pl-3 border-l-2 border-slate-200 py-1">
+                  <div class="text-xs sm:text-sm font-semibold text-slate-800 truncate">${log.destination || '-'}</div>
+                </div>
+
+                <!-- Departure Row -->
+                <div class="flex items-center gap-2 mt-0.5">
+                  <span class="w-2.5 h-2.5 rounded-full border-2 border-sky-500 bg-white shrink-0"></span>
+                  <span class="text-xs font-bold text-sky-600">출발지</span>
+                  <span class="text-xs font-mono font-semibold text-slate-600">${log.startTime || '--:--'}</span>
+                </div>
+                <div class="ml-1 pl-3.5 pt-1">
+                  <div class="text-xs sm:text-sm font-semibold text-slate-800 truncate">${log.origin || '-'}</div>
+                  <div class="mt-1 flex items-center gap-1.5 flex-wrap">
+                    <span class="text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded font-medium">${log.purpose || '일반업무'}</span>
+                    ${log.driver ? `<span class="text-[11px] text-slate-400">${log.dept ? log.dept + ' · ' : ''}${log.driver}</span>` : ''}
+                    ${log.notes ? `<span class="text-[11px] text-blue-600 truncate max-w-[160px]">• ${log.notes}</span>` : ''}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Odometer & Distance Column -->
+              <div class="shrink-0 text-right flex flex-col justify-between items-end min-w-[82px]">
+                <div class="text-xs font-mono font-semibold text-slate-500">${formatNumber(log.endOdo)}km</div>
+                <div class="text-xs font-mono text-slate-400 my-1">${formatNumber(log.startOdo)}km</div>
+                <div class="text-xl font-extrabold font-mono text-rose-600 leading-none">
+                  ${formatNumber(dist)}<span class="text-xs font-semibold text-slate-500 ml-0.5">KM</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Render Fleet Modal List
+      function renderFleetModalList() {
+        const listEl = document.getElementById('fleetModalList');
+        listEl.innerHTML = state.vehicles.map(veh => {
+          const isSelected = veh.id === state.selectedVehicleId;
+          const isDriving = Boolean(veh.activeTrip);
+          const logCount = state.logs.filter(l => l.vehicleId === veh.id).length;
+
+          return `
+            <div class="p-3.5 rounded-2xl border transition flex items-center justify-between gap-2 ${
+              isSelected ? 'border-blue-600 bg-blue-50/50' : 'border-slate-200 bg-white'
+            }">
+              <div class="min-w-0 flex-1 cursor-pointer" data-pick-vehicle="${veh.id}">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-bold px-2 py-0.5 rounded ${
+                    isSelected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'
+                  }">${veh.type || '차량'}</span>
+                  ${isDriving ? '<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800">현재 운행중</span>' : ''}
+                </div>
+                <div class="font-extrabold text-sm text-slate-900 mt-1 truncate">${veh.name}</div>
+                <div class="text-xs text-slate-500 mt-0.5">
+                  누적 <strong class="font-mono text-slate-700">${formatNumber(veh.currentOdo)} km</strong> • 기록 ${logCount}건
+                </div>
+              </div>
+
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" data-pick-vehicle="${veh.id}" class="px-3 py-1.5 rounded-xl text-xs font-bold ${
+                  isSelected
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                }">
+                  ${isSelected ? '선택됨' : '선택'}
+                </button>
+                ${
+                  state.vehicles.length > 1
+                    ? `<button type="button" data-delete-vehicle="${veh.id}" title="차량 삭제" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>`
+                    : ''
+                }
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function renderAll() {
+        renderMonthOptions();
+        renderHeaderAndStrip();
+        renderLogList();
+        renderFleetModalList();
+      }
+
+      // Open Start Or End Trip Flow
+      function handleMainActionClick() {
+        const v = getSelectedVehicle();
+        if (!v.activeTrip) {
+          // Open Start Trip Modal
+          document.getElementById('startModalVehicleBadge').textContent = `${v.name} (${v.type || '점검차량'})`;
+          document.getElementById('startTripDate').value = getNowDateStr();
+          document.getElementById('startTripTime').value = getNowTimeStr();
+          document.getElementById('startTripOdo').value = v.currentOdo;
+          document.getElementById('startTripPurpose').value = '도로순찰';
+          document.getElementById('startTripDept').value = state.defaultDept || '도로관리팀';
+          document.getElementById('startTripDriver').value = state.defaultDriver || '박성민';
+          document.getElementById('startTripOrigin').value = v.defaultOrigin || state.defaultLocation || '경기도 용인시 처인구 포곡읍';
+          openModal('modalStartTrip');
+        } else {
+          // Open End Trip Modal
+          const trip = v.activeTrip;
+          document.getElementById('endModalVehicleBadge').textContent = `${v.name} • 운행 종료`;
+          document.getElementById('endModalStartOdoDisplay').textContent = `${formatNumber(trip.startOdo)} KM`;
+          document.getElementById('endModalStartTimeDisplay').textContent = trip.startTime;
+          document.getElementById('endTripTime').value = getNowTimeStr();
+          document.getElementById('endTripOdo').value = trip.startOdo;
+          document.getElementById('endTripDestination').value = trip.origin || v.defaultOrigin || state.defaultLocation || '';
+          document.getElementById('endTripNotes').value = '';
+          document.getElementById('endOdoErrorMsg').classList.add('hidden');
+          updateEndModalDistancePreview();
+          openModal('modalEndTrip');
+        }
+      }
+
+      function updateEndModalDistancePreview() {
+        const v = getSelectedVehicle();
+        if (!v.activeTrip) return;
+        const startOdo = Number(v.activeTrip.startOdo) || 0;
+        const endOdo = Number(document.getElementById('endTripOdo').value) || 0;
+        const diff = endOdo - startOdo;
+        const badge = document.getElementById('endModalCalculatedDist');
+        if (diff >= 0) {
+          badge.textContent = `+ ${formatNumber(diff)} KM`;
+          badge.className = 'w-full bg-rose-50 border border-rose-200 text-rose-600 rounded-xl px-3 py-2.5 text-sm font-extrabold font-mono text-right';
+          document.getElementById('endOdoErrorMsg').classList.add('hidden');
+        } else {
+          badge.textContent = `${formatNumber(diff)} KM (오류)`;
+          badge.className = 'w-full bg-amber-50 border border-amber-300 text-amber-700 rounded-xl px-3 py-2.5 text-sm font-extrabold font-mono text-right';
+        }
+      }
+
+      // Open Edit / Manual Add Modal
+      function openEditLogModal(logId) {
+        const vehicleSelect = document.getElementById('editLogVehicleId');
+        vehicleSelect.innerHTML = state.vehicles.map(veh => `<option value="${veh.id}">${veh.name}</option>`).join('');
+
+        const deleteBtn = document.getElementById('btnDeleteLogItem');
+        const titleEl = document.getElementById('editLogModalTitle');
+
+        if (logId) {
+          const log = state.logs.find(l => l.id === logId);
+          if (!log) return;
+          titleEl.textContent = '운행정보 수정';
+          deleteBtn.classList.remove('hidden');
+
+          document.getElementById('editLogId').value = log.id;
+          vehicleSelect.value = log.vehicleId;
+          document.getElementById('editLogPurpose').value = log.purpose || '일반업무';
+          document.getElementById('editLogStartOdo').value = log.startOdo;
+          document.getElementById('editLogEndOdo').value = log.endOdo;
+          document.getElementById('editLogOrigin').value = log.origin || '';
+          document.getElementById('editLogDestination').value = log.destination || '';
+          document.getElementById('editLogDept').value = log.dept || state.defaultDept || '';
+          document.getElementById('editLogDriver').value = log.driver || state.defaultDriver || '';
+          document.getElementById('editLogDate').value = log.date || getNowDateStr();
+          document.getElementById('editLogStartTime').value = log.startTime || '09:00';
+          document.getElementById('editLogEndTime').value = log.endTime || '10:00';
+          document.getElementById('editLogFuelCost').value = log.fuelCost || '';
+          document.getElementById('editLogTollCost').value = log.tollCost || '';
+          document.getElementById('editLogEtcCost').value = log.etcCost || '';
+          document.getElementById('editLogNotes').value = log.notes || '';
+        } else {
+          // New manual entry
+          const v = getSelectedVehicle();
+          titleEl.textContent = '운행기록 직접 추가';
+          deleteBtn.classList.add('hidden');
+
+          document.getElementById('editLogId').value = '';
+          vehicleSelect.value = v.id;
+          document.getElementById('editLogPurpose').value = '도로순찰';
+          document.getElementById('editLogStartOdo').value = v.currentOdo;
+          document.getElementById('editLogEndOdo').value = v.currentOdo + 20;
+          document.getElementById('editLogOrigin').value = v.defaultOrigin || state.defaultLocation || '';
+          document.getElementById('editLogDestination').value = v.defaultOrigin || state.defaultLocation || '';
+          document.getElementById('editLogDept').value = state.defaultDept || '도로관리팀';
+          document.getElementById('editLogDriver').value = state.defaultDriver || '박성민';
+          document.getElementById('editLogDate').value = getNowDateStr();
+          document.getElementById('editLogStartTime').value = '09:00';
+          document.getElementById('editLogEndTime').value = getNowTimeStr();
+          document.getElementById('editLogFuelCost').value = '';
+          document.getElementById('editLogTollCost').value = '';
+          document.getElementById('editLogEtcCost').value = '';
+          document.getElementById('editLogNotes').value = '';
+        }
+
+        updateEditLogDistanceDisplay();
+        openModal('modalEditLog');
+      }
+
+      function updateEditLogDistanceDisplay() {
+        const s = Number(document.getElementById('editLogStartOdo').value) || 0;
+        const e = Number(document.getElementById('editLogEndOdo').value) || 0;
+        const dist = Math.max(0, e - s);
+        document.getElementById('editLogDistanceDisplay').value = formatNumber(dist);
+      }
+
+      // Export CSV
+      function exportCsv() {
+        const v = getSelectedVehicle();
+        const rows = [
+          ['차량명', '차량구분', '운행일자', '출발시간', '종료시간', '출발키로수(km)', '종료키로수(km)', '주행거리(km)', '사용목적', '출발지', '도착지', '부서', '운전자', '유류비', '통행료', '기타비용', '메모']
+        ];
+
+        const targetLogs = state.logs
+          .filter(log => state.viewAllVehicles ? true : log.vehicleId === v.id)
+          .sort((a, b) => `${b.date} ${b.startTime}`.localeCompare(`${a.date} ${a.startTime}`));
+
+        targetLogs.forEach(log => {
+          const veh = getVehicleById(log.vehicleId);
+          const dist = Math.max(0, (Number(log.endOdo) || 0) - (Number(log.startOdo) || 0));
+          rows.push([
+            veh ? veh.name : '',
+            veh ? veh.type : '',
+            log.date || '',
+            log.startTime || '',
+            log.endTime || '',
+            log.startOdo || 0,
+            log.endOdo || 0,
+            dist,
+            log.purpose || '',
+            log.origin || '',
+            log.destination || '',
+            log.dept || '',
+            log.driver || '',
+            log.fuelCost || 0,
+            log.tollCost || 0,
+            log.etcCost || 0,
+            (log.notes || '').replace(/\r?\n/g, ' ')
+          ]);
+        });
+
+        const csvContent = '\uFEFF' + rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const scopeName = state.viewAllVehicles ? '전체차량' : v.name.replace(/\s+/g, '_');
+        a.download = `차량운행일지_${scopeName}_${state.selectedMonth}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('엑셀(CSV) 파일이 다운로드되었습니다.');
+      }
+
+      // Event Listeners Setup
+      document.getElementById('btnMainAction').addEventListener('click', handleMainActionClick);
+
+      document.getElementById('btnOpenFleetModal').addEventListener('click', () => {
+        renderFleetModalList();
+        openModal('modalFleetManager');
+      });
+
+      document.getElementById('btnOpenFleetModalFooter').addEventListener('click', () => {
+        renderFleetModalList();
+        openModal('modalFleetManager');
+      });
+
+      document.getElementById('btnOpenAddVehicle').addEventListener('click', () => {
+        renderFleetModalList();
+        openModal('modalFleetManager');
+        setTimeout(() => {
+          document.getElementById('newVehicleName').focus();
+        }, 100);
+      });
+
+      // Open Odo & Settings Modal
+      function openOdoSettingsModal() {
+        const v = getSelectedVehicle();
+        document.getElementById('settingVehicleName').value = v.name;
+        document.getElementById('settingVehicleOdo').value = v.currentOdo;
+        document.getElementById('settingDefaultDept').value = state.defaultDept || '도로관리팀';
+        document.getElementById('settingDefaultDriver').value = state.defaultDriver || '박성민';
+        document.getElementById('settingDefaultLocation').value = v.defaultOrigin || state.defaultLocation || '';
+        openModal('modalOdoSettings');
+      }
+
+      document.getElementById('btnEditOdometer').addEventListener('click', openOdoSettingsModal);
+      document.getElementById('btnOpenSettings').addEventListener('click', openOdoSettingsModal);
+
+      document.getElementById('btnOpenInstallGuide').addEventListener('click', () => {
+        openModal('modalInstallGuide');
+      });
+
+      // PWA Install Prompt Handling
+      let deferredPwaPrompt = null;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPwaPrompt = e;
+        const banner = document.getElementById('pwaInstallBanner');
+        if (banner) banner.classList.remove('hidden');
+      });
+
+      document.getElementById('btnTriggerPwaInstall').addEventListener('click', async () => {
+        if (!deferredPwaPrompt) {
+          showToast('브라우저 메뉴에서 [홈 화면에 추가] 또는 [앱 설치]를 선택해 주세요.');
+          return;
+        }
+        deferredPwaPrompt.prompt();
+        await deferredPwaPrompt.userChoice;
+        deferredPwaPrompt = null;
+        document.getElementById('pwaInstallBanner').classList.add('hidden');
+      });
+
+      // Full JSON Backup & Restore
+      document.getElementById('btnBackupJson').addEventListener('click', () => {
+        const dataStr = JSON.stringify(state, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `도로관리팀_다중차량운행일지_백업_${getNowDateStr()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('전체 데이터 백업 파일(.json)이 저장되었습니다.');
+      });
+
+      document.getElementById('inputRestoreJson').addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const parsed = JSON.parse(String(ev.target.result || ''));
+            if (parsed && Array.isArray(parsed.vehicles) && Array.isArray(parsed.logs)) {
+              state = parsed;
+              saveState();
+              renderAll();
+              closeModal('modalInstallGuide');
+              showToast('백업 데이터가 성공적으로 복원되었습니다.');
+            } else {
+              showToast('올바른 운행일지 백업 파일이 아닙니다.');
+            }
+          } catch (err) {
+            showToast('파일을 읽는 중 오류가 발생했습니다.');
+          }
+        };
+        reader.readAsText(file);
+      });
+
+      document.getElementById('formOdoSettings').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const v = getSelectedVehicle();
+        v.name = document.getElementById('settingVehicleName').value.trim() || v.name;
+        v.currentOdo = Number(document.getElementById('settingVehicleOdo').value) || 0;
+        state.defaultDept = document.getElementById('settingDefaultDept').value.trim();
+        state.defaultDriver = document.getElementById('settingDefaultDriver').value.trim();
+        const loc = document.getElementById('settingDefaultLocation').value.trim();
+        v.defaultOrigin = loc;
+        state.defaultLocation = loc;
+
+        saveState();
+        renderAll();
+        closeModal('modalOdoSettings');
+        showToast('차량 누적거리 및 기본 설정이 저장되었습니다.');
+      });
+
+      // Start Trip Submit
+      document.getElementById('formStartTrip').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const v = getSelectedVehicle();
+        const startOdo = Number(document.getElementById('startTripOdo').value) || 0;
+        const dept = document.getElementById('startTripDept').value.trim() || '도로관리팀';
+        const driver = document.getElementById('startTripDriver').value.trim() || '박성민';
+        const origin = document.getElementById('startTripOrigin').value.trim();
+
+        v.currentOdo = startOdo;
+        v.defaultOrigin = origin || v.defaultOrigin;
+        state.defaultDept = dept;
+        state.defaultDriver = driver;
+
+        v.activeTrip = {
+          date: document.getElementById('startTripDate').value || getNowDateStr(),
+          startTime: document.getElementById('startTripTime').value || getNowTimeStr(),
+          startOdo: startOdo,
+          purpose: document.getElementById('startTripPurpose').value || '도로순찰',
+          dept: dept,
+          driver: driver,
+          origin: origin
+        };
+
+        saveState();
+        renderAll();
+        closeModal('modalStartTrip');
+        showToast(`${v.name} 운행이 시작되었습니다. (시작: ${formatNumber(startOdo)}km)`);
+      });
+
+      // End Trip Quick +KM buttons & input preview
+      document.getElementById('endTripOdo').addEventListener('input', updateEndModalDistancePreview);
+      document.querySelectorAll('[data-add-km]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const add = Number(btn.getAttribute('data-add-km')) || 0;
+          const input = document.getElementById('endTripOdo');
+          input.value = (Number(input.value) || 0) + add;
+          updateEndModalDistancePreview();
+        });
+      });
+
+      // End Trip Submit
+      document.getElementById('formEndTrip').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const v = getSelectedVehicle();
+        if (!v.activeTrip) return;
+
+        const startOdo = Number(v.activeTrip.startOdo) || 0;
+        const endOdo = Number(document.getElementById('endTripOdo').value) || 0;
+
+        if (endOdo < startOdo) {
+          document.getElementById('endOdoErrorMsg').classList.remove('hidden');
+          return;
+        }
+
+        const endTime = document.getElementById('endTripTime').value || getNowTimeStr();
+        const destination = document.getElementById('endTripDestination').value.trim() || v.activeTrip.origin || '';
+        const notes = document.getElementById('endTripNotes').value.trim();
+
+        const newLog = {
+          id: 'log_' + Date.now(),
+          vehicleId: v.id,
+          date: v.activeTrip.date || getNowDateStr(),
+          startTime: v.activeTrip.startTime,
+          endTime: endTime,
+          startOdo: startOdo,
+          endOdo: endOdo,
+          origin: v.activeTrip.origin || '',
+          destination: destination,
+          purpose: v.activeTrip.purpose || '도로순찰',
+          dept: v.activeTrip.dept || state.defaultDept || '도로관리팀',
+          driver: v.activeTrip.driver || state.defaultDriver || '박성민',
+          fuelCost: 0,
+          tollCost: 0,
+          etcCost: 0,
+          notes: notes
+        };
+
+        state.logs.unshift(newLog);
+        v.currentOdo = endOdo;
+        v.defaultOrigin = destination || v.defaultOrigin;
+        v.activeTrip = null;
+        state.selectedMonth = newLog.date.slice(0, 7);
+
+        saveState();
+        renderAll();
+        closeModal('modalEndTrip');
+        showToast(`${v.name} 운행 종료 완료! (+${formatNumber(endOdo - startOdo)}km 기록됨)`);
+      });
+
+      // Edit Log Modal Listeners
+      document.getElementById('editLogStartOdo').addEventListener('input', updateEditLogDistanceDisplay);
+      document.getElementById('editLogEndOdo').addEventListener('input', updateEditLogDistanceDisplay);
+
+      document.getElementById('btnOpenManualLogModal').addEventListener('click', () => {
+        openEditLogModal(null);
+      });
+
+      document.getElementById('btnSaveLogItem').addEventListener('click', () => {
+        const logId = document.getElementById('editLogId').value;
+        const vehicleId = document.getElementById('editLogVehicleId').value;
+        const startOdo = Number(document.getElementById('editLogStartOdo').value) || 0;
+        const endOdo = Number(document.getElementById('editLogEndOdo').value) || 0;
+
+        if (endOdo < startOdo) {
+          showToast('도착 누적거리가 출발 누적거리보다 작습니다.');
+          return;
+        }
+
+        const payload = {
+          id: logId || ('log_' + Date.now()),
+          vehicleId: vehicleId,
+          purpose: document.getElementById('editLogPurpose').value,
+          startOdo: startOdo,
+          endOdo: endOdo,
+          origin: document.getElementById('editLogOrigin').value.trim(),
+          destination: document.getElementById('editLogDestination').value.trim(),
+          dept: document.getElementById('editLogDept').value.trim(),
+          driver: document.getElementById('editLogDriver').value.trim(),
+          date: document.getElementById('editLogDate').value || getNowDateStr(),
+          startTime: document.getElementById('editLogStartTime').value || '09:00',
+          endTime: document.getElementById('editLogEndTime').value || '10:00',
+          fuelCost: Number(document.getElementById('editLogFuelCost').value) || 0,
+          tollCost: Number(document.getElementById('editLogTollCost').value) || 0,
+          etcCost: Number(document.getElementById('editLogEtcCost').value) || 0,
+          notes: document.getElementById('editLogNotes').value.trim()
+        };
+
+        if (logId) {
+          const idx = state.logs.findIndex(l => l.id === logId);
+          if (idx !== -1) state.logs[idx] = payload;
+        } else {
+          state.logs.unshift(payload);
+        }
+
+        const veh = getVehicleById(vehicleId);
+        if (veh && endOdo > veh.currentOdo) {
+          veh.currentOdo = endOdo;
+        }
+
+        state.selectedMonth = payload.date.slice(0, 7);
+        saveState();
+        renderAll();
+        closeModal('modalEditLog');
+        showToast('운행 기록이 저장되었습니다.');
+      });
+
+      document.getElementById('btnDeleteLogItem').addEventListener('click', () => {
+        const logId = document.getElementById('editLogId').value;
+        if (!logId) return;
+        state.logs = state.logs.filter(l => l.id !== logId);
+        saveState();
+        renderAll();
+        closeModal('modalEditLog');
+        showToast('운행 기록이 삭제되었습니다.');
+      });
+
+      // Add New Vehicle Submit
+      document.getElementById('formAddVehicle').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('newVehicleName').value.trim();
+        const type = document.getElementById('newVehicleType').value;
+        const odo = Number(document.getElementById('newVehicleOdo').value) || 0;
+        const origin = document.getElementById('newVehicleOrigin').value.trim() || state.defaultLocation;
+
+        if (!name) return;
+
+        const newVeh = {
+          id: 'v_' + Date.now(),
+          name: name,
+          type: type,
+          currentOdo: odo,
+          defaultOrigin: origin,
+          activeTrip: null
+        };
+
+        state.vehicles.push(newVeh);
+        state.selectedVehicleId = newVeh.id;
+        document.getElementById('formAddVehicle').reset();
+
+        saveState();
+        renderAll();
+        showToast(`새 차량 [${name}] 이(가) 등록 및 선택되었습니다.`);
+      });
+
+      // Filter & Export Listeners
+      document.getElementById('monthFilterSelect').addEventListener('change', (e) => {
+        state.selectedMonth = e.target.value;
+        saveState();
+        renderAll();
+      });
+
+      document.getElementById('btnToggleAllVehiclesView').addEventListener('click', () => {
+        state.viewAllVehicles = !state.viewAllVehicles;
+        saveState();
+        renderAll();
+      });
+
+      document.getElementById('btnExportCsv').addEventListener('click', exportCsv);
+
+      // Delegated Clicks (Vehicle Chips, Log Items, Fleet Modal Actions, Close Modal Buttons)
+      document.addEventListener('click', (e) => {
+        const closeBtn = e.target.closest('[data-close-modal]');
+        if (closeBtn) {
+          closeModal(closeBtn.getAttribute('data-close-modal'));
+          return;
+        }
+
+        const selectChip = e.target.closest('[data-select-vehicle]');
+        if (selectChip) {
+          state.selectedVehicleId = selectChip.getAttribute('data-select-vehicle');
+          saveState();
+          renderAll();
+          return;
+        }
+
+        const pickVeh = e.target.closest('[data-pick-vehicle]');
+        if (pickVeh) {
+          state.selectedVehicleId = pickVeh.getAttribute('data-pick-vehicle');
+          saveState();
+          renderAll();
+          closeModal('modalFleetManager');
+          const v = getSelectedVehicle();
+          showToast(`[${v.name}] 차량으로 전환되었습니다.`);
+          return;
+        }
+
+        const delVeh = e.target.closest('[data-delete-vehicle]');
+        if (delVeh) {
+          const delId = delVeh.getAttribute('data-delete-vehicle');
+          if (state.vehicles.length <= 1) {
+            showToast('최소 1대의 차량은 유지되어야 합니다.');
+            return;
+          }
+          const target = getVehicleById(delId);
+          state.vehicles = state.vehicles.filter(v => v.id !== delId);
+          if (state.selectedVehicleId === delId) {
+            state.selectedVehicleId = state.vehicles[0].id;
+          }
+          saveState();
+          renderAll();
+          showToast(`${target ? target.name : '차량'}이(가) 목록에서 삭제되었습니다.`);
+          return;
+        }
+
+        const logRow = e.target.closest('[data-edit-log]');
+        if (logRow) {
+          openEditLogModal(logRow.getAttribute('data-edit-log'));
+        }
+      });
+
+      // Register Service Worker for offline PWA support on GitHub Pages
+      if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').catch(() => {});
+        });
+      }
+
+      // Initial Render
+      renderAll();
+    })();
+  </script>
+</body>
+</html>
