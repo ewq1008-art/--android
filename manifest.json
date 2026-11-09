@@ -1,8 +1,9 @@
 {
+  "id": "road-driving-log-v2",
   "name": "도로관리팀 다중 차량 운행일지",
   "short_name": "차량운행일지",
-  "description": "여러 대의 점검·순찰·보수 차량을 개별 등록하여 시작/종료 키로수와 운행시간을 기록하는 차량운행일지 앱",
-  "start_url": "./index.html",
+  "description": "여러 대의 점검·순찰·보수 차량을 차종·차량명칭·차량번호로 개별 등록하여 시작/종료 키로수와 운행시간을 기록하는 차량운행일지 앱",
+  "start_url": "./index.html?v=2",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
