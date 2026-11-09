@@ -1,4 +1,4 @@
-const CACHE_NAME = 'road-driving-log-v2';
+const CACHE_NAME = 'road-driving-log-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -24,7 +24,6 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Network-First Strategy: always load the latest version when online, fallback to cache when offline
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   event.respondWith(
