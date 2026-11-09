@@ -74,13 +74,6 @@
           <span>차량등록</span>
         </button>
 
-        <button id="btnOpenInstallGuide" type="button" title="깃허브 배포 및 앱 설치 안내" class="shrink-0 flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-semibold px-2.5 py-2.5 rounded-xl shadow transition">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-          </svg>
-          <span>앱설치/GitHub</span>
-        </button>
-
         <button id="btnOpenSettings" type="button" title="기본 운전자 설정" class="shrink-0 p-2.5 bg-white/10 hover:bg-white/20 rounded-xl border border-white/10 text-slate-200 transition">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -506,11 +499,21 @@
               <span>새 차량 개별 등록</span>
             </h4>
             <form id="formAddVehicle" class="space-y-3 text-xs">
-              <div class="grid grid-cols-2 gap-2.5">
+              <div class="grid grid-cols-3 gap-2">
                 <div>
-                  <label class="block text-slate-500 font-semibold mb-1">차량명 / 번호판</label>
-                  <input type="text" id="newVehicleName" required placeholder="예: 코란도 3412" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+                  <label class="block text-slate-500 font-semibold mb-1">차종</label>
+                  <input type="text" id="newVehicleModel" required placeholder="예: 싼타페, 포터II" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
                 </div>
+                <div>
+                  <label class="block text-slate-500 font-semibold mb-1">차량명칭</label>
+                  <input type="text" id="newVehicleName" required placeholder="예: 순찰1호, 점검차" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+                </div>
+                <div>
+                  <label class="block text-slate-500 font-semibold mb-1">차량번호</label>
+                  <input type="text" id="newVehiclePlate" required placeholder="예: 12가 8169" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2.5">
                 <div>
                   <label class="block text-slate-500 font-semibold mb-1">차량 구분</label>
                   <select id="newVehicleType" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -521,16 +524,14 @@
                     <option value="제설/특수차량">제설/특수차량</option>
                   </select>
                 </div>
-              </div>
-              <div class="grid grid-cols-2 gap-2.5">
                 <div>
                   <label class="block text-slate-500 font-semibold mb-1">현재 누적키로수 (KM)</label>
                   <input type="number" id="newVehicleOdo" min="0" required placeholder="예: 32500" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono font-bold bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
-                <div>
-                  <label class="block text-slate-500 font-semibold mb-1">기본 출발지</label>
-                  <input type="text" id="newVehicleOrigin" placeholder="예: 용인포곡지사" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
+              </div>
+              <div>
+                <label class="block text-slate-500 font-semibold mb-1">기본 출발지</label>
+                <input type="text" id="newVehicleOrigin" placeholder="예: 경기도 용인시 처인구 포곡읍" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow transition">
                 + 차량 등록하기
@@ -553,9 +554,19 @@
           </button>
         </div>
         <form id="formOdoSettings" class="p-4 space-y-3.5 text-xs">
-          <div>
-            <label class="block text-slate-500 font-semibold mb-1">선택된 차량 명칭</label>
-            <input type="text" id="settingVehicleName" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm font-bold" />
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-slate-500 font-semibold mb-1">차종</label>
+              <input type="text" id="settingVehicleModel" required placeholder="예: 싼타페" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-bold" />
+            </div>
+            <div>
+              <label class="block text-slate-500 font-semibold mb-1">차량명칭</label>
+              <input type="text" id="settingVehicleName" required placeholder="예: 순찰1호" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-bold" />
+            </div>
+            <div>
+              <label class="block text-slate-500 font-semibold mb-1">차량번호</label>
+              <input type="text" id="settingVehiclePlate" required placeholder="예: 8169" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-mono font-bold" />
+            </div>
           </div>
           <div>
             <label class="block text-slate-500 font-semibold mb-1">현재 누적주행거리 (KM)</label>
@@ -583,87 +594,6 @@
       </div>
     </div>
 
-    <!-- MODAL 6: GitHub Pages & Mobile App (PWA / APK) Install Guide + Backup -->
-    <div id="modalInstallGuide" class="hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div class="bg-white w-full max-w-md max-h-[90vh] rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden">
-        <div class="bg-slate-900 text-white px-5 py-4 flex items-center justify-between shrink-0">
-          <div>
-            <span class="text-[11px] text-emerald-400 font-semibold block">GitHub Pages & 모바일 앱(PWA/APK) 제작</span>
-            <h3 class="text-base font-bold">깃허브 등록 및 스마트폰 앱 설치 가이드</h3>
-          </div>
-          <button type="button" data-close-modal="modalInstallGuide" class="p-1.5 rounded-lg hover:bg-white/15">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        <div class="p-4 flex-1 overflow-y-auto space-y-4 text-xs leading-relaxed text-slate-700">
-          <!-- Native PWA Install Button (Shown when supported) -->
-          <div id="pwaInstallBanner" class="hidden bg-emerald-50 border border-emerald-200 rounded-2xl p-3.5 flex items-center justify-between gap-2">
-            <div>
-              <div class="font-bold text-emerald-900 text-sm">홈 화면에 바로 앱 설치 가능</div>
-              <div class="text-emerald-700 text-[11px]">주소창 없이 일반 네이티브 어플처럼 실행됩니다.</div>
-            </div>
-            <button type="button" id="btnTriggerPwaInstall" class="shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-2 rounded-xl shadow">
-              지금 앱 설치
-            </button>
-          </div>
-
-          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2">
-            <div class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-              <span class="w-5 h-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">1</span>
-              <span>GitHub 저장소(Repository)에 파일 올리기</span>
-            </div>
-            <ol class="list-decimal list-inside space-y-1 text-slate-600 pl-1">
-              <li>첨부된 <strong>driving-log-pwa.zip</strong> 압축을 풉니다.</li>
-              <li>GitHub에서 새 Repository(예: <code class="bg-slate-200 px-1.5 py-0.5 rounded text-slate-800">driving-log</code>, Public)를 생성합니다.</li>
-              <li><strong>Add file → Upload files</strong>를 눌러 압축 푼 파일들(<code class="bg-slate-200 px-1 rounded">index.html</code>, <code class="bg-slate-200 px-1 rounded">manifest.json</code>, <code class="bg-slate-200 px-1 rounded">sw.js</code>, <code class="bg-slate-200 px-1 rounded">icons/</code> 폴더)을 그대로 드래그해 올리고 <strong>Commit changes</strong>를 누릅니다.</li>
-            </ol>
-          </div>
-
-          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2">
-            <div class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-              <span class="w-5 h-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">2</span>
-              <span>GitHub Pages 활성화 (무료 앱 주소 발급)</span>
-            </div>
-            <ol class="list-decimal list-inside space-y-1 text-slate-600 pl-1">
-              <li>저장소 상단 <strong>Settings → 왼쪽 메뉴 Pages</strong>로 이동합니다.</li>
-              <li><strong>Build and deployment → Branch</strong>에서 <code class="bg-slate-200 px-1.5 py-0.5 rounded text-slate-800">main</code> (또는 master) 선택 후 <strong>Save</strong>를 누릅니다.</li>
-              <li>약 1분 뒤 <code class="bg-slate-200 px-1 rounded">https://아이디.github.io/driving-log/</code> 주소가 생성됩니다.</li>
-            </ol>
-          </div>
-
-          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-2">
-            <div class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-              <span class="w-5 h-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">3</span>
-              <span>스마트폰 바탕화면에 진짜 어플로 설치 / APK 만들기</span>
-            </div>
-            <ul class="list-disc list-inside space-y-1 text-slate-600 pl-1">
-              <li><strong>안드로이드 (Chrome)</strong>: 배포된 주소 접속 → 우측 상단 메뉴(⋮) → <strong>[앱 설치]</strong> 또는 <strong>[홈 화면에 추가]</strong> 터치</li>
-              <li><strong>아이폰 (Safari)</strong>: 배포된 주소 접속 → 하단 공유 버튼(네모 위 화살표) → <strong>[홈 화면에 추가]</strong> 터치</li>
-              <li><strong>안드로이드 .APK 설치파일 추출</strong>: <a href="https://www.pwabuilder.com" target="_blank" rel="noopener noreferrer" class="text-blue-600 font-semibold underline">PWABuilder.com</a>에 GitHub Pages 주소를 입력하면 안드로이드 설치용 <strong>.apk 파일</strong>을 바로 다운로드할 수 있습니다.</li>
-            </ul>
-          </div>
-
-          <!-- Data Backup & Restore Section for Multi-Device Sharing -->
-          <div class="bg-blue-50/70 border border-blue-200 rounded-2xl p-3.5 space-y-2.5">
-            <div class="font-bold text-blue-950 text-sm">데이터 전체 백업 및 복원 (기기 변경/공유용)</div>
-            <p class="text-[11px] text-blue-800">차량 목록과 전체 운행 기록을 파일로 백업하거나 다른 휴대폰으로 그대로 옮길 수 있습니다.</p>
-            <div class="flex gap-2">
-              <button type="button" id="btnBackupJson" class="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-xs transition">
-                백업 파일(.json) 저장
-              </button>
-              <label class="flex-1 py-2 bg-white hover:bg-slate-50 text-blue-700 border border-blue-300 font-bold rounded-xl text-center cursor-pointer transition">
-                <span>백업 파일 불러오기</span>
-                <input type="file" id="inputRestoreJson" accept=".json" class="hidden" />
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
   </div>
 
   <script>
@@ -680,7 +610,10 @@
         vehicles: [
           {
             id: 'v1',
-            name: '싼타페 8169',
+            carModel: '싼타페',
+            vehicleTitle: '순찰1호',
+            plateNumber: '8169',
+            name: '싼타페 · 순찰1호 (8169)',
             type: '순찰/점검차량',
             currentOdo: 54153,
             defaultOrigin: '경기도 용인시 처인구 포곡읍',
@@ -688,7 +621,10 @@
           },
           {
             id: 'v2',
-            name: '포터II 4201 (보수)',
+            carModel: '포터II',
+            vehicleTitle: '보수1호',
+            plateNumber: '4201',
+            name: '포터II · 보수1호 (4201)',
             type: '작업/보수차량',
             currentOdo: 88320,
             defaultOrigin: '경기도 용인시 처인구 포곡읍',
@@ -696,7 +632,10 @@
           },
           {
             id: 'v3',
-            name: '더뉴봉고3 7782 (순찰)',
+            carModel: '더뉴봉고3',
+            vehicleTitle: '안전순찰2호',
+            plateNumber: '7782',
+            name: '더뉴봉고3 · 안전순찰2호 (7782)',
             type: '안전순찰차',
             currentOdo: 41290,
             defaultOrigin: '경기도 용인시 처인구 포곡읍',
@@ -704,7 +643,10 @@
           },
           {
             id: 'v4',
-            name: '카니발 1954 (점검)',
+            carModel: '카니발',
+            vehicleTitle: '시설점검차',
+            plateNumber: '1954',
+            name: '카니발 · 시설점검차 (1954)',
             type: '순찰/점검차량',
             currentOdo: 63410,
             defaultOrigin: '경기도 용인시 처인구 포곡읍',
@@ -843,12 +785,34 @@
 
       let state = loadState();
 
+      function composeVehicleDisplayName(carModel, vehicleTitle, plateNumber) {
+        const m = (carModel || '').trim();
+        const t = (vehicleTitle || '').trim();
+        const p = (plateNumber || '').trim();
+        const left = [m, t].filter(Boolean).join(' · ');
+        if (left && p) return `${left} (${p})`;
+        return left || p || '미지정 차량';
+      }
+
+      function normalizeVehicleFields(v) {
+        if (!v.carModel && !v.vehicleTitle && !v.plateNumber) {
+          const raw = (v.name || '').trim();
+          const parts = raw.split(/\s+/);
+          v.carModel = parts[0] || '점검차량';
+          v.plateNumber = parts[1] || '';
+          v.vehicleTitle = parts.slice(2).join(' ').replace(/[()]/g, '') || '운행차량';
+        }
+        v.name = composeVehicleDisplayName(v.carModel, v.vehicleTitle, v.plateNumber);
+        return v;
+      }
+
       function loadState() {
         try {
           const saved = localStorage.getItem(STORAGE_KEY);
           if (saved) {
             const parsed = JSON.parse(saved);
             if (parsed && Array.isArray(parsed.vehicles) && parsed.vehicles.length > 0) {
+              parsed.vehicles.forEach(normalizeVehicleFields);
               return parsed;
             }
           }
@@ -1141,13 +1105,15 @@
               isSelected ? 'border-blue-600 bg-blue-50/50' : 'border-slate-200 bg-white'
             }">
               <div class="min-w-0 flex-1 cursor-pointer" data-pick-vehicle="${veh.id}">
-                <div class="flex items-center gap-1.5">
-                  <span class="text-xs font-bold px-2 py-0.5 rounded ${
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="text-[11px] font-bold px-2 py-0.5 rounded ${
                     isSelected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'
                   }">${veh.type || '차량'}</span>
+                  <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700">차종: ${veh.carModel || '-'}</span>
+                  <span class="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-sky-50 text-sky-700 border border-sky-200">번호: ${veh.plateNumber || '-'}</span>
                   ${isDriving ? '<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800">현재 운행중</span>' : ''}
                 </div>
-                <div class="font-extrabold text-sm text-slate-900 mt-1 truncate">${veh.name}</div>
+                <div class="font-extrabold text-sm text-slate-900 mt-1.5 truncate">${veh.vehicleTitle ? veh.vehicleTitle + ' (' + (veh.carModel || '') + ' ' + (veh.plateNumber || '') + ')' : veh.name}</div>
                 <div class="text-xs text-slate-500 mt-0.5">
                   누적 <strong class="font-mono text-slate-700">${formatNumber(veh.currentOdo)} km</strong> • 기록 ${logCount}건
                 </div>
@@ -1299,7 +1265,7 @@
       function exportCsv() {
         const v = getSelectedVehicle();
         const rows = [
-          ['차량명', '차량구분', '운행일자', '출발시간', '종료시간', '출발키로수(km)', '종료키로수(km)', '주행거리(km)', '사용목적', '출발지', '도착지', '부서', '운전자', '유류비', '통행료', '기타비용', '메모']
+          ['차종', '차량명칭', '차량번호', '차량구분', '운행일자', '출발시간', '종료시간', '출발키로수(km)', '종료키로수(km)', '주행거리(km)', '사용목적', '출발지', '도착지', '부서', '운전자', '유류비', '통행료', '기타비용', '메모']
         ];
 
         const targetLogs = state.logs
@@ -1310,8 +1276,10 @@
           const veh = getVehicleById(log.vehicleId);
           const dist = Math.max(0, (Number(log.endOdo) || 0) - (Number(log.startOdo) || 0));
           rows.push([
-            veh ? veh.name : '',
-            veh ? veh.type : '',
+            veh ? (veh.carModel || '') : '',
+            veh ? (veh.vehicleTitle || veh.name || '') : '',
+            veh ? (veh.plateNumber || '') : '',
+            veh ? (veh.type || '') : '',
             log.date || '',
             log.startTime || '',
             log.endTime || '',
@@ -1361,14 +1329,17 @@
         renderFleetModalList();
         openModal('modalFleetManager');
         setTimeout(() => {
-          document.getElementById('newVehicleName').focus();
+          document.getElementById('newVehicleModel').focus();
         }, 100);
       });
 
       // Open Odo & Settings Modal
       function openOdoSettingsModal() {
         const v = getSelectedVehicle();
-        document.getElementById('settingVehicleName').value = v.name;
+        normalizeVehicleFields(v);
+        document.getElementById('settingVehicleModel').value = v.carModel || '';
+        document.getElementById('settingVehicleName').value = v.vehicleTitle || '';
+        document.getElementById('settingVehiclePlate').value = v.plateNumber || '';
         document.getElementById('settingVehicleOdo').value = v.currentOdo;
         document.getElementById('settingDefaultDept').value = state.defaultDept || '도로관리팀';
         document.getElementById('settingDefaultDriver').value = state.defaultDriver || '박성민';
@@ -1378,85 +1349,6 @@
 
       document.getElementById('btnEditOdometer').addEventListener('click', openOdoSettingsModal);
       document.getElementById('btnOpenSettings').addEventListener('click', openOdoSettingsModal);
-
-      document.getElementById('btnOpenInstallGuide').addEventListener('click', () => {
-        openModal('modalInstallGuide');
-      });
-
-      // PWA Install Prompt Handling
-      let deferredPwaPrompt = null;
-      window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPwaPrompt = e;
-        const banner = document.getElementById('pwaInstallBanner');
-        if (banner) banner.classList.remove('hidden');
-      });
-
-      document.getElementById('btnTriggerPwaInstall').addEventListener('click', async () => {
-        if (!deferredPwaPrompt) {
-          showToast('브라우저 메뉴에서 [홈 화면에 추가] 또는 [앱 설치]를 선택해 주세요.');
-          return;
-        }
-        deferredPwaPrompt.prompt();
-        await deferredPwaPrompt.userChoice;
-        deferredPwaPrompt = null;
-        document.getElementById('pwaInstallBanner').classList.add('hidden');
-      });
-
-      // Full JSON Backup & Restore
-      document.getElementById('btnBackupJson').addEventListener('click', () => {
-        const dataStr = JSON.stringify(state, null, 2);
-        const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `도로관리팀_다중차량운행일지_백업_${getNowDateStr()}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showToast('전체 데이터 백업 파일(.json)이 저장되었습니다.');
-      });
-
-      document.getElementById('inputRestoreJson').addEventListener('change', (e) => {
-        const file = e.target.files && e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          try {
-            const parsed = JSON.parse(String(ev.target.result || ''));
-            if (parsed && Array.isArray(parsed.vehicles) && Array.isArray(parsed.logs)) {
-              state = parsed;
-              saveState();
-              renderAll();
-              closeModal('modalInstallGuide');
-              showToast('백업 데이터가 성공적으로 복원되었습니다.');
-            } else {
-              showToast('올바른 운행일지 백업 파일이 아닙니다.');
-            }
-          } catch (err) {
-            showToast('파일을 읽는 중 오류가 발생했습니다.');
-          }
-        };
-        reader.readAsText(file);
-      });
-
-      document.getElementById('formOdoSettings').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const v = getSelectedVehicle();
-        v.name = document.getElementById('settingVehicleName').value.trim() || v.name;
-        v.currentOdo = Number(document.getElementById('settingVehicleOdo').value) || 0;
-        state.defaultDept = document.getElementById('settingDefaultDept').value.trim();
-        state.defaultDriver = document.getElementById('settingDefaultDriver').value.trim();
-        const loc = document.getElementById('settingDefaultLocation').value.trim();
-        v.defaultOrigin = loc;
-        state.defaultLocation = loc;
-
-        saveState();
-        renderAll();
-        closeModal('modalOdoSettings');
-        showToast('차량 누적거리 및 기본 설정이 저장되었습니다.');
-      });
 
       // Start Trip Submit
       document.getElementById('formStartTrip').addEventListener('submit', (e) => {
@@ -1618,16 +1510,23 @@
       // Add New Vehicle Submit
       document.getElementById('formAddVehicle').addEventListener('submit', (e) => {
         e.preventDefault();
-        const name = document.getElementById('newVehicleName').value.trim();
+        const carModel = document.getElementById('newVehicleModel').value.trim();
+        const vehicleTitle = document.getElementById('newVehicleName').value.trim();
+        const plateNumber = document.getElementById('newVehiclePlate').value.trim();
         const type = document.getElementById('newVehicleType').value;
         const odo = Number(document.getElementById('newVehicleOdo').value) || 0;
         const origin = document.getElementById('newVehicleOrigin').value.trim() || state.defaultLocation;
 
-        if (!name) return;
+        if (!carModel && !vehicleTitle && !plateNumber) return;
+
+        const fullName = composeVehicleDisplayName(carModel, vehicleTitle, plateNumber);
 
         const newVeh = {
           id: 'v_' + Date.now(),
-          name: name,
+          carModel: carModel,
+          vehicleTitle: vehicleTitle,
+          plateNumber: plateNumber,
+          name: fullName,
           type: type,
           currentOdo: odo,
           defaultOrigin: origin,
@@ -1640,7 +1539,7 @@
 
         saveState();
         renderAll();
-        showToast(`새 차량 [${name}] 이(가) 등록 및 선택되었습니다.`);
+        showToast(`새 차량 [${fullName}] 이(가) 등록 및 선택되었습니다.`);
       });
 
       // Filter & Export Listeners
