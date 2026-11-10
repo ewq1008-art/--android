@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="차량운행일지" />
-  <link rel="manifest" href="./manifest.json?v=3" />
+  <link rel="manifest" href="./manifest.json?v=5" />
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
   <link rel="apple-touch-icon" href="./icons/icon-192.png" />
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
@@ -83,8 +83,26 @@
       </div>
 
       <!-- Horizontal Quick Vehicle Chips -->
-      <div id="vehicleChipStrip" class="relative z-10 flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2 mb-3">
+      <div id="vehicleChipStrip" class="relative z-10 flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1.5 mb-2">
         <!-- Populated dynamically -->
+      </div>
+
+      <!-- Selected Vehicle Spec Bar (VIN, Front/Rear Tire, Next Inspection Date) -->
+      <div id="headerVehicleSpecBar" class="relative z-10 mb-2 bg-white/10 hover:bg-white/15 active:bg-white/20 transition rounded-xl px-3 py-2 border border-white/10 cursor-pointer flex items-center justify-between gap-2 text-[11px] text-slate-200" title="터치하여 차량 상세제원 및 검사일 수정">
+        <div class="flex items-center gap-2 flex-wrap min-w-0">
+          <span class="inline-flex items-center gap-1 truncate">
+            <span class="text-slate-400">차대번호:</span>
+            <strong id="specBarVin" class="font-mono text-white">미등록</strong>
+          </span>
+          <span class="text-slate-500">|</span>
+          <span class="inline-flex items-center gap-1">
+            <span class="text-slate-400">타이어(앞/뒤):</span>
+            <strong id="specBarTires" class="font-mono text-sky-300">- / -</strong>
+          </span>
+        </div>
+        <div id="specBarInspectionBadge" class="shrink-0 px-2 py-0.5 rounded-full font-semibold text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+          검사예정: 미등록
+        </div>
       </div>
 
       <!-- Center Big Start / End Circle Button -->
@@ -137,9 +155,15 @@
         </button>
       </div>
 
-      <div class="text-right">
-        <span class="text-slate-500 text-xs">총 운행거리</span>
-        <strong id="summaryTotalDistance" class="ml-1 text-slate-900 font-extrabold font-mono text-sm">130 KM</strong>
+      <div class="text-right flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-3">
+        <div>
+          <span class="text-slate-500 text-[11px]">총 운행시간</span>
+          <strong id="summaryTotalDuration" class="ml-1 text-blue-600 font-extrabold font-mono text-xs sm:text-sm">0시간 0분</strong>
+        </div>
+        <div>
+          <span class="text-slate-500 text-[11px]">총 운행거리</span>
+          <strong id="summaryTotalDistance" class="ml-1 text-slate-900 font-extrabold font-mono text-xs sm:text-sm">130 KM</strong>
+        </div>
       </div>
     </div>
 
@@ -533,6 +557,32 @@
                 <label class="block text-slate-500 font-semibold mb-1">기본 출발지</label>
                 <input type="text" id="newVehicleOrigin" placeholder="예: 경기도 용인시 처인구 포곡읍" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
+
+              <!-- 차량 상세 제원 (차대번호, 앞/뒤 타이어 사이즈, 자동차검사 예정일) -->
+              <div class="pt-2 border-t border-slate-200 space-y-2.5">
+                <div class="text-[11px] font-bold text-blue-600">차량 상세 제원 및 자동차검사 정보 (선택)</div>
+                <div class="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <label class="block text-slate-500 font-semibold mb-1">차대번호 (VIN)</label>
+                    <input type="text" id="newVehicleVin" placeholder="예: KMHS381CB..." class="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-mono uppercase bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label class="block text-slate-500 font-semibold mb-1">자동차검사기간 (다음예정일)</label>
+                    <input type="date" id="newVehicleInspectionDate" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-mono bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <label class="block text-slate-500 font-semibold mb-1">앞 타이어 사이즈</label>
+                    <input type="text" id="newVehicleFrontTire" placeholder="예: 235/60R18" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-mono bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label class="block text-slate-500 font-semibold mb-1">뒤 타이어 사이즈</label>
+                    <input type="text" id="newVehicleRearTire" placeholder="예: 235/60R18 (복륜시 구분)" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-mono bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                </div>
+              </div>
+
               <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow transition">
                 + 차량 등록하기
               </button>
@@ -542,18 +592,18 @@
       </div>
     </div>
 
-    <!-- MODAL 5: Edit Odometer & Default Driver Settings Modal -->
+    <!-- MODAL 5: Edit Odometer, Vehicle Specs & Default Driver Settings Modal -->
     <div id="modalOdoSettings" class="hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
-        <div class="bg-slate-800 text-white px-4 py-3.5 flex items-center justify-between">
-          <h3 class="text-sm font-bold">차량 누적거리 및 기본 정보 설정</h3>
+      <div class="bg-white w-full max-w-md max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <div class="bg-slate-800 text-white px-4 py-3.5 flex items-center justify-between shrink-0">
+          <h3 class="text-sm font-bold">차량 상세정보 · 누적거리 설정</h3>
           <button type="button" data-close-modal="modalOdoSettings" class="p-1 rounded hover:bg-white/10">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
-        <form id="formOdoSettings" class="p-4 space-y-3.5 text-xs">
+        <form id="formOdoSettings" class="p-4 space-y-3 text-xs overflow-y-auto flex-1">
           <div class="grid grid-cols-3 gap-2">
             <div>
               <label class="block text-slate-500 font-semibold mb-1">차종</label>
@@ -568,10 +618,37 @@
               <input type="text" id="settingVehiclePlate" placeholder="예: 391소8169" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-mono font-bold" />
             </div>
           </div>
+
           <div>
             <label class="block text-slate-500 font-semibold mb-1">현재 누적주행거리 (KM)</label>
             <input type="number" id="settingVehicleOdo" min="0" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-base font-mono font-extrabold text-blue-600" />
           </div>
+
+          <!-- 차량 상세 제원 섹션 -->
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2.5">
+            <div class="text-[11px] font-bold text-blue-600">차량 상세정보 (차대번호 / 타이어 / 정기검사)</div>
+            <div class="grid grid-cols-2 gap-2.5">
+              <div>
+                <label class="block text-slate-500 font-semibold mb-1">차대번호 (VIN)</label>
+                <input type="text" id="settingVehicleVin" placeholder="예: KMHS381CB..." class="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-mono uppercase bg-white" />
+              </div>
+              <div>
+                <label class="block text-slate-500 font-semibold mb-1">자동차검사기간 (다음예정일)</label>
+                <input type="date" id="settingVehicleInspectionDate" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-mono bg-white" />
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2.5">
+              <div>
+                <label class="block text-slate-500 font-semibold mb-1">앞 타이어 사이즈</label>
+                <input type="text" id="settingVehicleFrontTire" placeholder="예: 235/60R18" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-mono bg-white" />
+              </div>
+              <div>
+                <label class="block text-slate-500 font-semibold mb-1">뒤 타이어 사이즈</label>
+                <input type="text" id="settingVehicleRearTire" placeholder="예: 235/60R18" class="w-full border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-mono bg-white" />
+              </div>
+            </div>
+          </div>
+
           <div class="grid grid-cols-2 gap-2.5">
             <div>
               <label class="block text-slate-500 font-semibold mb-1">기본 소속 부서</label>
@@ -611,11 +688,15 @@
           {
             id: 'v1',
             carModel: '싼타페',
-            vehicleTitle: '순찰1호',
-            plateNumber: '8169',
-            name: '싼타페 · 순찰1호 (8169)',
+            vehicleTitle: '점검1호',
+            plateNumber: '391소8169',
+            name: '싼타페 · 점검1호 (391소8169)',
             type: '순찰/점검차량',
             currentOdo: 54153,
+            vin: 'KMHS381CBPU128169',
+            frontTire: '235/60R18',
+            rearTire: '235/60R18',
+            nextInspectionDate: '2027-04-15',
             defaultOrigin: '경기도 용인시 처인구 포곡읍',
             activeTrip: null
           },
@@ -623,10 +704,14 @@
             id: 'v2',
             carModel: '포터II',
             vehicleTitle: '보수1호',
-            plateNumber: '4201',
-            name: '포터II · 보수1호 (4201)',
+            plateNumber: '82가4201',
+            name: '포터II · 보수1호 (82가4201)',
             type: '작업/보수차량',
             currentOdo: 88320,
+            vin: 'KMFZSZ7JBPU044201',
+            frontTire: '195/70R15C',
+            rearTire: '145R13C',
+            nextInspectionDate: '2026-12-10',
             defaultOrigin: '경기도 용인시 처인구 포곡읍',
             activeTrip: null
           },
@@ -634,10 +719,14 @@
             id: 'v3',
             carModel: '더뉴봉고3',
             vehicleTitle: '안전순찰2호',
-            plateNumber: '7782',
-            name: '더뉴봉고3 · 안전순찰2호 (7782)',
+            plateNumber: '91나7782',
+            name: '더뉴봉고3 · 안전순찰2호 (91나7782)',
             type: '안전순찰차',
             currentOdo: 41290,
+            vin: 'KNCWJZ7KAPU017782',
+            frontTire: '195/70R15C',
+            rearTire: '145R13C',
+            nextInspectionDate: '2027-02-20',
             defaultOrigin: '경기도 용인시 처인구 포곡읍',
             activeTrip: null
           },
@@ -645,10 +734,14 @@
             id: 'v4',
             carModel: '카니발',
             vehicleTitle: '시설점검차',
-            plateNumber: '1954',
-            name: '카니발 · 시설점검차 (1954)',
+            plateNumber: '123하1954',
+            name: '카니발 · 시설점검차 (123하1954)',
             type: '순찰/점검차량',
             currentOdo: 63410,
+            vin: 'KPKM381ABPU091954',
+            frontTire: '235/55R19',
+            rearTire: '235/55R19',
+            nextInspectionDate: '2027-06-30',
             defaultOrigin: '경기도 용인시 처인구 포곡읍',
             activeTrip: null
           }
@@ -802,8 +895,31 @@
           v.plateNumber = parts[1] || '';
           v.vehicleTitle = parts.slice(2).join(' ').replace(/[()]/g, '') || '운행차량';
         }
+        if (typeof v.vin !== 'string') v.vin = '';
+        if (typeof v.frontTire !== 'string') v.frontTire = '';
+        if (typeof v.rearTire !== 'string') v.rearTire = '';
+        if (typeof v.nextInspectionDate !== 'string') v.nextInspectionDate = '';
         v.name = composeVehicleDisplayName(v.carModel, v.vehicleTitle, v.plateNumber);
         return v;
+      }
+
+      function getInspectionStatus(dateStr) {
+        if (!dateStr) {
+          return { text: '검사예정: 미등록', badgeClass: 'bg-slate-500/20 text-slate-300 border-slate-400/30', cardClass: 'bg-slate-100 text-slate-600' };
+        }
+        const today = new Date(getNowDateStr() + 'T00:00:00');
+        const target = new Date(dateStr + 'T00:00:00');
+        const diffDays = Math.round((target - today) / (1000 * 60 * 60 * 24));
+        if (isNaN(diffDays)) {
+          return { text: `검사예정: ${dateStr}`, badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30', cardClass: 'bg-emerald-50 text-emerald-700 border border-emerald-200' };
+        }
+        if (diffDays < 0) {
+          return { text: `검사경과 (${dateStr}, ${Math.abs(diffDays)}일 지남)`, badgeClass: 'bg-rose-500/30 text-rose-200 border-rose-400/50', cardClass: 'bg-rose-50 text-rose-700 border border-rose-200 font-bold' };
+        }
+        if (diffDays <= 30) {
+          return { text: `검사임박 ${dateStr} (D-${diffDays})`, badgeClass: 'bg-amber-500/30 text-amber-200 border-amber-400/50', cardClass: 'bg-amber-50 text-amber-800 border border-amber-200 font-bold' };
+        }
+        return { text: `검사예정: ${dateStr} (D-${diffDays})`, badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30', cardClass: 'bg-emerald-50 text-emerald-700 border border-emerald-200' };
       }
 
       function loadState() {
@@ -856,6 +972,25 @@
         if (parts.length !== 3) return '';
         const dt = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
         return days[dt.getDay()] || '';
+      }
+
+      function calcDurationMinutes(startTime, endTime) {
+        if (!startTime || !endTime || !startTime.includes(':') || !endTime.includes(':')) return 0;
+        const [sh, sm] = startTime.split(':').map(Number);
+        const [eh, em] = endTime.split(':').map(Number);
+        if (isNaN(sh) || isNaN(sm) || isNaN(eh) || isNaN(em)) return 0;
+        let diff = (eh * 60 + em) - (sh * 60 + sm);
+        if (diff < 0) diff += 24 * 60; // 야간 자정 경과 운행 처리
+        return diff;
+      }
+
+      function formatDurationKorean(totalMinutes) {
+        const mins = Math.max(0, Math.round(Number(totalMinutes) || 0));
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        if (h > 0 && m > 0) return `${h}시간 ${m}분`;
+        if (h > 0 && m === 0) return `${h}시간`;
+        return `${m}분`;
       }
 
       function showToast(msg) {
@@ -951,6 +1086,16 @@
           `;
         }).join('');
 
+        // Populate Vehicle Spec Bar in Header
+        document.getElementById('specBarVin').textContent = v.vin ? v.vin : '미등록';
+        const fTire = v.frontTire || '-';
+        const rTire = v.rearTire || '-';
+        document.getElementById('specBarTires').textContent = `${fTire} / ${rTire}`;
+        const insp = getInspectionStatus(v.nextInspectionDate);
+        const inspBadge = document.getElementById('specBarInspectionBadge');
+        inspBadge.textContent = insp.text;
+        inspBadge.className = `shrink-0 px-2 py-0.5 rounded-full font-semibold text-[10px] border ${insp.badgeClass}`;
+
         // Main Circle Action Button
         const btnMain = document.getElementById('btnMainAction');
         const subLabel = document.getElementById('mainActionSubLabel');
@@ -1015,7 +1160,12 @@
           return acc + dist;
         }, 0);
 
+        const totalDurationMins = filtered.reduce((acc, item) => {
+          return acc + calcDurationMinutes(item.startTime, item.endTime);
+        }, 0);
+
         document.getElementById('summaryTotalDistance').textContent = `${formatNumber(totalDist)} KM`;
+        document.getElementById('summaryTotalDuration').textContent = formatDurationKorean(totalDurationMins);
         document.getElementById('summaryTripCount').textContent = String(filtered.length);
 
         if (filtered.length === 0) {
@@ -1037,6 +1187,8 @@
           const dayNum = (log.date || '').split('-')[2] || '--';
           const dow = getKoreanDayOfWeek(log.date);
           const dist = Math.max(0, (Number(log.endOdo) || 0) - (Number(log.startOdo) || 0));
+          const durationMins = calcDurationMinutes(log.startTime, log.endTime);
+          const durationText = formatDurationKorean(durationMins);
           const veh = getVehicleById(log.vehicleId);
           const vehBadge = state.viewAllVehicles && veh
             ? `<span class="inline-block bg-slate-800 text-white text-[10px] font-bold px-2 py-0.5 rounded mb-1">${veh.name}</span>`
@@ -1079,12 +1231,17 @@
                 </div>
               </div>
 
-              <!-- Right Odometer & Distance Column -->
-              <div class="shrink-0 text-right flex flex-col justify-between items-end min-w-[82px]">
+              <!-- Right Odometer, Distance & Duration Column -->
+              <div class="shrink-0 text-right flex flex-col justify-between items-end min-w-[88px]">
                 <div class="text-xs font-mono font-semibold text-slate-500">${formatNumber(log.endOdo)}km</div>
-                <div class="text-xs font-mono text-slate-400 my-1">${formatNumber(log.startOdo)}km</div>
-                <div class="text-xl font-extrabold font-mono text-rose-600 leading-none">
-                  ${formatNumber(dist)}<span class="text-xs font-semibold text-slate-500 ml-0.5">KM</span>
+                <div class="text-xs font-mono text-slate-400 my-0.5">${formatNumber(log.startOdo)}km</div>
+                <div class="mt-1 flex flex-col items-end">
+                  <div class="text-xl font-extrabold font-mono text-rose-600 leading-none">
+                    ${formatNumber(dist)}<span class="text-xs font-semibold text-slate-500 ml-0.5">KM</span>
+                  </div>
+                  <div class="mt-1 inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-bold text-[11px] leading-none">
+                    운행 ${durationText}
+                  </div>
                 </div>
               </div>
             </div>
@@ -1116,6 +1273,15 @@
                 <div class="font-extrabold text-sm text-slate-900 mt-1.5 truncate">${veh.vehicleTitle ? veh.vehicleTitle + ' (' + (veh.carModel || '') + ' ' + (veh.plateNumber || '') + ')' : veh.name}</div>
                 <div class="text-xs text-slate-500 mt-0.5">
                   누적 <strong class="font-mono text-slate-700">${formatNumber(veh.currentOdo)} km</strong> • 기록 ${logCount}건
+                </div>
+                <div class="mt-2 pt-2 border-t border-slate-100 space-y-1 text-[11px] text-slate-600">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-slate-400">차대번호: <strong class="font-mono text-slate-700">${veh.vin || '미등록'}</strong></span>
+                    <span class="px-1.5 py-0.5 rounded text-[10px] ${getInspectionStatus(veh.nextInspectionDate).cardClass}">${getInspectionStatus(veh.nextInspectionDate).text}</span>
+                  </div>
+                  <div class="text-slate-400">
+                    타이어(앞/뒤): <strong class="font-mono text-slate-700">${veh.frontTire || '-'}</strong> / <strong class="font-mono text-slate-700">${veh.rearTire || '-'}</strong>
+                  </div>
                 </div>
               </div>
 
@@ -1268,7 +1434,7 @@
       function exportCsv() {
         const v = getSelectedVehicle();
         const rows = [
-          ['차종', '차량명칭', '차량번호', '차량구분', '운행일자', '출발시간', '종료시간', '출발키로수(km)', '종료키로수(km)', '주행거리(km)', '사용목적', '출발지', '도착지', '부서', '운전자', '유류비', '통행료', '기타비용', '메모']
+          ['차종', '차량명칭', '차량번호', '차량구분', '차대번호', '앞타이어사이즈', '뒤타이어사이즈', '자동차검사예정일', '운행일자', '출발시간', '종료시간', '운행소요시간', '출발키로수(km)', '종료키로수(km)', '주행거리(km)', '사용목적', '출발지', '도착지', '부서', '운전자', '유류비', '통행료', '기타비용', '메모']
         ];
 
         const targetLogs = state.logs
@@ -1283,9 +1449,14 @@
             veh ? (veh.vehicleTitle || veh.name || '') : '',
             veh ? (veh.plateNumber || '') : '',
             veh ? (veh.type || '') : '',
+            veh ? (veh.vin || '') : '',
+            veh ? (veh.frontTire || '') : '',
+            veh ? (veh.rearTire || '') : '',
+            veh ? (veh.nextInspectionDate || '') : '',
             log.date || '',
             log.startTime || '',
             log.endTime || '',
+            formatDurationKorean(calcDurationMinutes(log.startTime, log.endTime)),
             log.startOdo || 0,
             log.endOdo || 0,
             dist,
@@ -1344,6 +1515,10 @@
         document.getElementById('settingVehicleName').value = v.vehicleTitle || '';
         document.getElementById('settingVehiclePlate').value = v.plateNumber || '';
         document.getElementById('settingVehicleOdo').value = v.currentOdo;
+        document.getElementById('settingVehicleVin').value = v.vin || '';
+        document.getElementById('settingVehicleInspectionDate').value = v.nextInspectionDate || '';
+        document.getElementById('settingVehicleFrontTire').value = v.frontTire || '';
+        document.getElementById('settingVehicleRearTire').value = v.rearTire || '';
         document.getElementById('settingDefaultDept').value = state.defaultDept || '도로관리팀';
         document.getElementById('settingDefaultDriver').value = state.defaultDriver || '박성민';
         document.getElementById('settingDefaultLocation').value = v.defaultOrigin || state.defaultLocation || '';
@@ -1352,6 +1527,7 @@
 
       document.getElementById('btnEditOdometer').addEventListener('click', openOdoSettingsModal);
       document.getElementById('btnOpenSettings').addEventListener('click', openOdoSettingsModal);
+      document.getElementById('headerVehicleSpecBar').addEventListener('click', openOdoSettingsModal);
 
       function saveOdoSettingsHandler(e) {
         if (e) e.preventDefault();
@@ -1365,6 +1541,10 @@
         v.plateNumber = plateVal || v.plateNumber || '';
         v.name = composeVehicleDisplayName(v.carModel, v.vehicleTitle, v.plateNumber);
         v.currentOdo = Number(document.getElementById('settingVehicleOdo').value) || 0;
+        v.vin = document.getElementById('settingVehicleVin').value.trim().toUpperCase();
+        v.nextInspectionDate = document.getElementById('settingVehicleInspectionDate').value;
+        v.frontTire = document.getElementById('settingVehicleFrontTire').value.trim();
+        v.rearTire = document.getElementById('settingVehicleRearTire').value.trim();
 
         state.defaultDept = document.getElementById('settingDefaultDept').value.trim();
         state.defaultDriver = document.getElementById('settingDefaultDriver').value.trim();
@@ -1375,7 +1555,7 @@
         saveState();
         renderAll();
         closeModal('modalOdoSettings');
-        showToast(`[${v.name}] 차량 정보 및 누적거리가 저장되었습니다.`);
+        showToast(`[${v.name}] 상세정보 및 누적거리가 저장되었습니다.`);
       }
 
       document.getElementById('formOdoSettings').addEventListener('submit', saveOdoSettingsHandler);
@@ -1551,6 +1731,11 @@
 
         const fullName = composeVehicleDisplayName(carModel, vehicleTitle, plateNumber);
 
+        const vin = document.getElementById('newVehicleVin').value.trim().toUpperCase();
+        const nextInspectionDate = document.getElementById('newVehicleInspectionDate').value;
+        const frontTire = document.getElementById('newVehicleFrontTire').value.trim();
+        const rearTire = document.getElementById('newVehicleRearTire').value.trim();
+
         const newVeh = {
           id: 'v_' + Date.now(),
           carModel: carModel,
@@ -1559,6 +1744,10 @@
           name: fullName,
           type: type,
           currentOdo: odo,
+          vin: vin,
+          frontTire: frontTire,
+          rearTire: rearTire,
+          nextInspectionDate: nextInspectionDate,
           defaultOrigin: origin,
           activeTrip: null
         };
@@ -1648,17 +1837,17 @@
         }
       });
 
-      // Clear stale caches automatically and register Network-First Service Worker (v3)
+      // Clear stale caches automatically and register Network-First Service Worker (v5)
       if ('caches' in window) {
         caches.keys().then((keys) => {
           keys.forEach((k) => {
-            if (k !== 'road-driving-log-v3') caches.delete(k);
+            if (k !== 'road-driving-log-v5') caches.delete(k);
           });
         });
       }
       if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js?v=3').then((reg) => {
+          navigator.serviceWorker.register('./sw.js?v=5').then((reg) => {
             reg.update();
           }).catch(() => {});
         });
